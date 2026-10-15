@@ -1,0 +1,9 @@
+node_modules/
+dist/
+src-tauri/target/
+*.sqlite*
+.env
+# Les rapports reproductibles ne sont pas des sources du produit.
+test-results/
+playwright-report/
+*.tsbuildinfo

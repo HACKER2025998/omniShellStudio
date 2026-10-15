@@ -1,0 +1,12 @@
+# Service systemd utilisateur : installer dans ~/.config/systemd/user/ après compilation.
+[Unit]
+Description=OmniShell local history and infrastructure cache
+[Service]
+# Le PATH du service doit contenir Docker si les snapshots automatiques sont souhaités.
+ExecStart=%h/.local/bin/omnishell daemon
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+[Install]
+WantedBy=default.target

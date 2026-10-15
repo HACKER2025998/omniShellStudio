@@ -1,0 +1,82 @@
+<!doctype html>
+<!-- Cette page autonome est embarquée dans Rust et ne charge rien sur Internet. -->
+<html lang="fr">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width"
+  /><title>ClassShare · OmniShell</title>
+  <style>
+    /* Une interface lisible reste utilisable depuis le téléphone d'un étudiant. */
+    body {
+      font: 16px system-ui;
+      background: #f8fafc;
+      color: #0f172a;
+      max-width: 720px;
+      margin: 60px auto;
+      padding: 24px;
+    }
+    main {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 32px;
+    }
+    input,
+    button {
+      font: inherit;
+      padding: 12px;
+      margin: 6px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+    li {
+      padding: 12px;
+    }
+    small {
+      color: #475569;
+    }
+  </style>
+  <main>
+    <small>OMNISHELL STUDIO / CLASS SHARE</small>
+    <h1>Bienvenue dans la salle.</h1>
+    <p>Les fichiers restent sur le réseau local de votre hôte.</p>
+    <form id="join">
+      <input id="name" placeholder="Votre nom" maxlength="80" required /><input
+        id="pin"
+        placeholder="Code à 6 chiffres"
+        pattern="[0-9]{6}"
+        required
+      /><button>Rejoindre</button>
+    </form>
+    <p id="status" role="status"></p>
+    <ul id="files"></ul>
+    <button id="refresh" hidden>Actualiser</button>
+    <div id="upload-area" hidden>
+      <label
+        >Envoyer un fichier (2 Gio maximum)<input
+          id="upload"
+          type="file"
+          multiple
+      /></label>
+      <p>
+        <small
+          >Pour reprendre, sélectionnez à nouveau le même fichier. Pour un
+          dossier, envoyez une archive.</small
+        >
+      </p>
+    </div>
+    <p>
+      <small
+        >Connexion TLS locale. Vérifiez le certificat communiqué par votre
+        hôte.</small
+      >
+    </p>
+  </main>
+  <!-- Le bundle inclut le calcul BLAKE3 sous licence MIT et fonctionne hors ligne. -->
+  <script src="/client.js" defer></script>
+</html>

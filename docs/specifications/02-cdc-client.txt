@@ -1,0 +1,126 @@
+DOCUMENT 02 // CAHIER DES CHARGES FONCTIONNEL & TECHNIQUE + README OFFICIEL
+CAHIER DES CHARGES COMPLET (CDC) & README OFFICIELProjet : OmniShell Studio (v1.0)
+Spécifications Fonctionnelles, Exigences Non-Fonctionnelles, Matrice de Traçabilité, Scripts de Packaging (PKGBUILD AUR, Debian Control, NSIS Windows) et Documentation GitHub A-Z.
+Élément du Document
+Détail / Référence
+Titre du Projet
+OmniShell Studio — The Daylight Offline Command, NetMap & Classroom LAN Hub
+Porteur du Projet / Lead Dev
+Kossi Bernard Etonam ADJOGBLE (xhackerip)
+Partie I du Document
+Cahier des Charges Complet (Analyse du Besoin, Spécifications FR/NFR, Architecture, Planning)
+Partie II du Document
+README.md Officiel Complet (Prêt pour GitHub / GitLab / Documentation Utilisateur & Dev)
+Licence Recommandée
+MIT / Apache-2.0 (Dual License Open-Source) ou Core Open-Source + Edition Pro
+Cibles de Déploiement
+Linux (Arch AUR `yay`, Debian/Ubuntu `apt`/`.deb`, `.bin`), Windows (`.exe`), macOS (`.dmg`)
+
+
+PARTIE I : CAHIER DES CHARGES FONCTIONNEL & TECHNIQUE (A à Z)
+1. Contexte, Constat & Problématique
+Lors de la réalisation de projets complexes en administration système et réseau, en DevOps/DevSecOps, en génie logiciel (bases de données SQL, modélisation Merise/UML) ou en intelligence artificielle, les ingénieurs et étudiants font face à 4 obstacles majeurs au quotidien :
+Perte et dispersion des commandes : Les commandes cruciales (`docker`, `nmap`, `ip`, `pacman`, `systemctl`, `git`, `psql`) sont tapées dans différents terminaux (Kitty, GNOME Terminal, PowerShell) avec ou sans `sudo`. Les fichiers `.zsh_history` ou `.bash_history` sont bruts, non classés, limités en taille et impossibles à parcourir visuellement.
+Dépendance à Internet et aux IA pour retrouver sa propre infrastructure : Lorsqu'un administrateur ou étudiant n'a pas de connexion Internet, il perd un temps précieux à essayer de se souvenir de la syntaxe exacte qu'il avait utilisée pour lancer tel conteneur Docker ou inspecter tel réseau.
+Absence de visibilité immédiate sur l'architecture réseau locale : Se connecter à un réseau (salle de TP, entreprise, lab) ne donne aucune vue globale de la chaîne FAI -> Routeur -> Switch -> Serveurs -> Terminaux sans lancer manuellement une dizaine d'outils disparates.
+Difficulté de partage de fichiers en salle de classe ou en réseau isolé (Air-Gapped) : En salle de cours ou en réunion sans Internet, partager un fichier ou un dossier entre un enseignant (« Maître ») et 40 étudiants tout en contrôlant qui a le droit d'envoyer des fichiers est un casse-tête (clés USB lentes, configuration Samba complexe).
+2. Objectifs Stratégiques de la Solution OmniShell Studio
+OmniShell Studio centralise ces besoins au sein d'un unique logiciel desktop natif, ultra-rapide (écrit en Rust + Tauri v2), au design clair (« Daylight Studio » non-sombre), capable de :
+1. Rétro-ingérer instantanément tout le passé de l'utilisateur : Dès l'installation via `apt`, `yay`, `.deb`, `.bin` ou `.exe`, le logiciel récupère toutes les commandes déjà exécutées avant même son installation et les classe par catégorie et sous-section.
+2. Capturer et organiser chaque nouvelle commande en temps réel : Gestion native du préfixe `sudo`, regroupement intelligent (`docker`, `ls`, `nmap`, `ip`, etc.), recherche en moins de 5ms et copie en 1 clic.
+3. Offrir un cache hors-ligne complet des conteneurs Docker & bases de données : Visualisation des conteneurs et génération de commandes prêtes à l'emploi sans connexion Internet.
+4. Cartographier automatiquement le réseau local (NetMap Studio) : Reconstruction visuelle de l'architecture du FAI jusqu'aux terminaux.
+5. Transformer n'importe quel PC en serveur de partage collaboratif (ClassShare LAN) : Accès par QR Code ou Code à 6 chiffres, gestion granulaire des droits d'upload en temps réel par le Maître, et reprise transparente après déconnexion.
+3. Matrice des Exigences Fonctionnelles (Functional Requirements)
+ID
+Module
+Exigence Fonctionnelle Détaillée
+Priorité
+FR-01
+Command Vault
+Rétro-ingestion automatique au premier lancement des historiques Bash, Zsh, Fish (Linux/macOS) et PSReadLine (Windows PowerShell).
+P0 (Critique)
+FR-02
+Command Vault
+Capture temps réel asynchrone (< 1.5ms) de chaque commande exécutée dans Kitty, Alacritty, GNOME Terminal, Konsole, Windows Terminal.
+P0 (Critique)
+FR-03
+Command Vault
+Décomposition AST : détection de `sudo`/`doas`, extraction du binaire réel (`sudo docker ps` -> classé dans `docker` avec badge `[SUDO]`).
+P0 (Critique)
+FR-04
+Command Vault
+Classement automatique en catégories et sous-sections (Docker, Nmap, IP, LS, Git, Pacman/Apt, SQL, IA) + copie en 1 clic.
+P0 (Critique)
+FR-05
+Docker Offline
+Mise en cache automatique de tous les conteneurs Docker (actifs et passés), ports, volumes et reconstitution de la commande `docker run` d'origine.
+P0 (Critique)
+FR-06
+NetMap Studio
+Découverte et dessin automatique de la topologie : FAI/WAN -> Routeur/Gateway -> Switch/AP -> Serveurs -> Terminaux finaux.
+P0 (Critique)
+FR-07
+ClassShare LAN
+Démarrage d'un serveur local HTTP/2 + WebSockets par le Maître avec génération automatique d'un Code à 6 chiffres et d'un QR Code.
+P0 (Critique)
+FR-08
+ClassShare LAN
+Panneau de contrôle Maître : liste des utilisateurs connectés en temps réel, activation/révocation individuelle du droit d'upload de fichiers/dossiers.
+P0 (Critique)
+FR-09
+ClassShare LAN
+Persistance de session : un utilisateur qui coupe sa connexion et revient plus tard retrouve sa session et reprend ses téléchargements interrompus.
+P1 (Haute)
+FR-10
+DBA & Merise
+Générateur hors-ligne de diagrammes MCD/MLD Merise et UML à partir de scripts SQL ou de bases locales + coffre de requêtes DBA.
+P1 (Haute)
+
+4. Exigences Non-Fonctionnelles (Performance, UI Daylight & Sécurité)
+Catégorie NFR
+Métrique / Critère d'Acceptation Strict
+Design & Ergonomie
+Thème 100% Clair « Daylight Studio » (#F8FAFC / #FFFFFF / #2563EB). Aucun fond noir terne par défaut. Contraste WCAG AAA.
+Empreinte Mémoire (RAM)
+< 55 Mo en mode fenêtré actif (grâce à Tauri v2 WebView natif vs 450 Mo pour Electron) et < 12 Mo pour le daemon en arrière-plan.
+Vitesse de Recherche
+< 5 millisecondes pour filtrer 100 000 commandes via l'index SQLite FTS5 Trigram.
+Taille de l'Installateur
+< 14 Mo pour le paquet `.deb`, `.pkg.tar.zst` (Arch) et `.exe` (Windows).
+Sécurité & Confidentialité
+100% des données stockées localement. Masquage automatique des mots de passe/tokens dans les commandes. Chiffrement TLS/Token sur ClassShare LAN.
+
+5. Fichiers de Packaging Officiels (Arch Linux AUR & Debian APT)
+Pour permettre l'installation directe via `yay -S omnishell-studio` sur Arch Linux et `sudo apt install omnishell-studio` sur Debian/Ubuntu, voici les manifestes de construction officiels du projet :
+FICHIER PKGBUILD OFFICIEL POUR ARCH LINUX (AUR - yay / paru)# Maintainer: Kossi Bernard Etonam ADJOGBLE <xhackerip>pkgname=omnishell-studiopkgver=1.0.0pkgrel=1pkgdesc="Daylight Offline Command Vault, Docker Inspector, Network Mapper & Classroom LAN File Share"arch=('x86_64' 'aarch64')url="https://github.com/xhackerip/omnishell-studio"license=('MIT')depends=('webkit2gtk-4.1' 'gtk3' 'libayatana-appindicator' 'openssl' 'sqlite' 'libpcap')makedepends=('rust' 'cargo' 'nodejs' 'pnpm' 'pkgconf')install=omnishell.installsource=("${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz")sha256sums=('SKIP')build() {  cd "${srcdir}/${pkgname}-${pkgver}"  pnpm install --frozen-lockfile  pnpm tauri build --bundles deb}package() {  cd "${srcdir}/${pkgname}-${pkgver}"  install -Dm755 "src-tauri/target/release/omnishell" "${pkgdir}/usr/bin/omnishell"  install -Dm644 "assets/omnishell.desktop" "${pkgdir}/usr/share/applications/omnishell.desktop"}
+
+FICHIER DEBIAN/CONTROL POUR PAQUET .DEB & DÉPÔT APTPackage: omnishell-studioVersion: 1.0.0Section: utilsPriority: optionalArchitecture: amd64Depends: libwebkit2gtk-4.1-0, libgtk-3-0, libsqlite3-0, libpcap0.8, iproute2Maintainer: Kossi Bernard Etonam ADJOGBLE <xhackerip>Homepage: https://github.com/xhackerip/omnishell-studioDescription: Daylight Workstation for DevOps, Network Admins & IT Students Automatically collects, categorizes and indexes all terminal commands (bash, zsh, fish, kitty, powershell), caches Docker containers offline, maps LAN topology from ISP to endpoints, and provides a 6-digit / QR code classroom LAN file sharing server.
+
+
+PARTIE II : README.MD COMPLET DU LOGICIEL (A à Z)
+Cette section contient le README complet et structuré du dépôt officiel d'OmniShell Studio, prêt à être affiché sur GitHub/GitLab et dans la documentation intégrée.
+☀️ OMNISHELL STUDIO — THE DAYLIGHT COMMAND, NETMAP & LAN SHARE HUBBuild: Passing | Platform: Linux (Arch, Debian, Ubuntu) • Windows 11 • macOS | Core: Rust + Tauri v2 | UI: Daylight Studio« Ne perdez plus jamais une commande. N'ayez plus jamais besoin d'Internet pour retrouver vos conteneurs Docker, cartographier votre réseau ou partager des fichiers en salle de classe. »
+
+🌟 Pourquoi OmniShell Studio ?
+Que vous soyez ingénieur DevOps, DevSecOps, administrateur systèmes & réseaux, ingénieur IA, DBA ou étudiant en informatique, vous tapez des centaines de commandes chaque semaine dans vos terminaux (Kitty, GNOME Terminal, Alacritty, PowerShell). OmniShell Studio est une application desktop ultra-légère et lumineuse qui travaille silencieusement pour vous :
+⚡ Rétro-Ingestion Immédiate à l'Installation : Dès que vous l'installez, OmniShell Studio récupère toutes les commandes que vous aviez tapées avant même qu'il ne soit installé (`.zsh_history`, `.bash_history`, `fish_history`, `PowerShell`) et les range proprement par catégorie (`docker`, `ls`, `nmap`, `ip`, `git`, `pacman`, `apt`, etc.).
+🛡️ Gestion Intelligente de Sudo : Une commande `sudo nmap -sS 192.168.1.1` ou `sudo docker ps` n'est pas perdue dans une catégorie `sudo` : elle est classée dans `nmap` ou `docker` avec un badge visuel `[SUDO]` clair.
+🐳 Cache Docker 100% Hors-Ligne : Retrouvez tous vos conteneurs Docker, leurs ports, leurs volumes et les commandes exactes pour les relancer ou les inspecter, même sans connexion Internet et sans demander à une IA.
+🗺️ NetMap Studio (Cartographie Réseau Automatique) : Connectez-vous à n'importe quel réseau et visualisez instantanément toute l'architecture : FAI (ISP) ➔ Routeur/Passerelle ➔ Switch/AP ➔ Serveurs ➔ Terminaux.
+📂 ClassShare LAN (Partage de Fichiers & Dossiers par QR Code & Code à 6 Chiffres) : En salle de classe ou au bureau sans Internet, le Maître dépose un fichier ou dossier, génère un Code à 6 chiffres et un QR Code. Il voit tous les utilisateurs connectés en temps réel et décide d'un clic qui a le droit d'envoyer des fichiers à son tour. Les utilisateurs peuvent se déconnecter et revenir plus tard sans rien perdre.
+📦 Installation Rapide (Linux, Windows, macOS)
+1. Arch Linux / Manjaro / EndeavourOS (via yay ou paru)
+Installation depuis l'AUR$ yay -S omnishell-studio-bin# Ou pour compiler depuis les sources Rust :$ yay -S omnishell-studio
+
+2. Debian / Ubuntu / Kali Linux / Linux Mint (via apt ou .deb)
+Installation via le dépôt APT officiel ou paquet .deb$ curl -fsSL https://apt.omnishell.dev/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/omnishell.gpg$ echo "deb [signed-by=/etc/apt/keyrings/omnishell.gpg] https://apt.omnishell.dev stable main" | sudo tee /etc/apt/sources.list.d/omnishell.list$ sudo apt update && sudo apt install omnishell-studio# Ou installation directe du paquet .deb téléchargé :$ sudo dpkg -i omnishell-studio_1.0.0_amd64.deb
+
+3. Binaire Universel Linux (.bin) & Windows 10/11 (.exe)
+Exécution directe ou installation Windows# Linux Binaire autonome (.bin) :$ chmod +x omnishell-studio-linux-x86_64.bin && ./omnishell-studio-linux-x86_64.bin# Windows (PowerShell / Winget ou installateur OmniShell-Setup.exe) :PS C:\> winget install xhackerip.OmniShellStudio
+
+🏗️ Architecture du Projet (Arborescence du Code Source)
+STRUCTURE DU MONOREPO TAURI v2 + RUST + REACTomnishell-studio/├── src/                              # Frontend React 19 + TypeScript + Tailwind (Daylight UI)│   ├── components/│   │   ├── layout/                   # TopBar, FrostedSidebar, InspectorDrawer, StatusBar│   │   ├── vault/                    # CommandCard, SudoBadge, CategoryTree, TemplateModal│   │   ├── docker/                   # ContainerGrid, OfflineSnapshotView, QuickCliGenerator│   │   ├── netmap/                   # TopologyCanvas (React Flow), NodeInspector, IspBanner│   │   ├── lanshare/                 # HostControlCenter, PinCodeDisplay, PeerRbacRow│   │   └── dba/                      # MeriseMcdCanvas, SqlToUmlParser, DbaCommandCheatsheet├── src-tauri/                        # Backend Système Rust Haute Performance│   ├── src/│   │   ├── main.rs                   # Entrée Tauri & Gestionnaire de System Tray│   │   ├── history_ingestor.rs       # Rétro-ingestion .zsh_history, .bash_history, PSReadLine│   │   ├── ast_classifier.rs         # Décomposition AST, Sudo stripping & Taxonomie│   │   ├── docker_watcher.rs         # Ecoute /var/run/docker.sock & Cache SQLite Offline│   │   ├── netmap_engine.rs          # Scan ARP, ICMP, LLDP, SNMP, mDNS & Graphe Réseau│   │   ├── lanshare_server.rs        # Serveur Axum HTTP/2, WebSockets, Code 6 chiffres & RBAC│   │   └── db.rs                     # Couche SQLite WAL + Index FTS5 Trigram└── packaging/                        # Scripts PKGBUILD (AUR), Debian control, Windows NSIS
+
+🛠️ Guide de Développement Local (Build from Source)
+Commandes pour cloner, lancer et compiler le projet$ git clone https://github.com/xhackerip/omnishell-studio.git$ cd omnishell-studio$ pnpm install$ pnpm tauri dev        # Lance l'application en mode développement avec Hot-Reload$ pnpm tauri build      # Génère les installateurs .deb, .AppImage, .exe et .dmg

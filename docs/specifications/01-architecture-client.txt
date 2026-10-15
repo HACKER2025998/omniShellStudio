@@ -1,0 +1,238 @@
+DOCUMENT 01 // MASTER SYSTEM BLUEPRINT & AI GENERATION PROMPT
+OMNISHELL STUDIO (v1.0)Spécification Architecturale Complète & Prompt Maître de Conception A-Z
+La Workstation Desktop Cross-Platform (Linux, Windows, macOS) Off-Grid pour DevOps, DevSecOps, Administrateurs Réseaux & Systèmes, Ingénieurs IA, DBAs et Étudiants IT.
+Attribut du Projet
+Valeur / Spécification Officielle
+Nom du Logiciel
+OmniShell Studio (Binaire CLI & Daemon : omnishell)
+Architecte & Auteur Principal
+Kossi Bernard Etonam ADJOGBLE (xhackerip)
+Cibles Utilisateurs
+DevOps, DevSecOps, Admin Sys/Réseau, Ingénieurs IA, DBA (SQL/Merise/UML), Étudiants IT
+Systèmes d'Exploitation
+Arch Linux (yay / AUR), Debian/Ubuntu/Kali (apt / .deb), Windows 10/11 (.exe / winget), macOS (.dmg / brew)
+Stack Technique Core
+Tauri v2 + Rust (Tokio, Libp2p, Axum, Pnet, Rusqlite) + React 19 + TypeScript + Tailwind CSS
+Identité Visuelle (UI)
+Daylight Studio Alabaster (Thème Clair Haute-Précision, 0% Dark Mode terne, Glassmorphism Clair)
+Fonctionnement Réseau
+100% Local-First & Offline-Ready (Zéro dépendance Cloud, LAN Air-Gapped natif)
+
+INSTRUCTIONS D'UTILISATION DE CE DOCUMENT COMME PROMPT MAÎTRECe document est structuré à la fois comme une spécification d'ingénierie logicielle de niveau industriel et comme un Super-Prompt Système exhaustif.Vous pouvez copier l'intégralité ou des sections spécifiques de ce document dans un agent de génération de code (Cursor, Claude Code, Windsurf, Gemini Code Assist) pour générer chaque module Rust et chaque composant React au pixel près, sans aucune ambiguïté sur l'emplacement des boutons, la logique métier, le schéma SQLite ou la gestion des erreurs.
+
+
+1. Identité Système, Rôle du Prompt & Philosophie « Daylight Studio »
+Tu es un Architecte Logiciel Principal (Principal Systems & UI/UX Architect) spécialisé en Rust (Tauri v2, programmation système bas niveau, raw sockets, parsing AST) et en ingénierie Frontend React/TypeScript de haute précision. Ta mission est de concevoir et coder OmniShell Studio, une application desktop native cross-platform qui résout la fragmentation des outils d'administration système, de mémorisation de commandes, d'inspection de conteneurs hors-ligne, de cartographie réseau et de partage de fichiers en salle de TP ou en environnement air-gapped.
+1.1. Direction Artistique : « Daylight Alabaster & Frosted Porcelain » (Non-Sombre)
+Contrairement aux outils DevOps traditionnels qui imposent des interfaces noires fatigantes ou austères, OmniShell Studio adopte obligatoirement un design lumineux, aérien, chirurgical et ultra-moderne inspiré de Linear Light Mode, Apple macOS Sequoia Daylight et Craft.do.
+Token CSS / Design
+Code Hex / Valeur
+Usage Précis dans l'Interface
+--bg-canvas-primary
+#F8FAFC (Alabaster)
+Fond principal de l'application (arrière-plan global lumineux et doux)
+--bg-surface-card
+#FFFFFF (Pure White)
+Fond des cartes de commandes, inspecteurs Docker, noeuds réseau et tables
+--bg-sidebar-frosted
+rgba(241, 245, 249, 0.88)
+Barre latérale gauche avec backdrop-filter: blur(16px) et bordure #E2E8F0
+--text-ink-primary
+#0F172A (Deep Slate)
+Titres, commandes principales, adresses IP, noms de fichiers
+--text-ink-secondary
+#475569 (Muted Slate)
+Descriptions des flags, métadonnées, timestamps, chemins de dossiers
+--accent-cobalt
+#2563EB (Royal Cobalt)
+Boutons primaires, onglets actifs, liens, focus ring (2px solid #93C5FD)
+--accent-emerald
+#059669 (Emerald Mint)
+Badges conteneurs Running, hôtes en ligne (Ping < 10ms), transferts réussis
+--accent-amber
+#D97706 (Warm Amber)
+Badge [SUDO] d'élévation de privilèges, alertes de latence moyenne, mode Read-Only
+--accent-crimson
+#DC2626 (Signal Crimson)
+Commandes destructrices (rm -rf, dropdb), conteneurs Exited, révocation d'accès
+--border-hairline
+1px solid #E2E8F0
+Bordures ultra-fines séparant les panneaux, les cartes et les lignes de tableaux
+--shadow-elevation-1
+0 2px 6px -1px rgba(15,23,42,0.05)
+Ombre douce par défaut sur chaque carte blanche posée sur le fond #F8FAFC
+--shadow-elevation-hover
+0 10px 20px -3px rgba(37,99,235,0.10)
+Ombre bleutée subtile au survol d'une carte (accompagnée d'un translateY(-2px))
+
+1.2. Typographie & Micro-Animations (Framer Motion)
+Police Interface (UI Sans) : Plus Jakarta Sans ou Inter (Poids : 400 Regular, 500 Medium, 600 SemiBold, 700 Bold). Taille de base : 13.5px.
+Police Terminal & Code (Mono) : JetBrains Mono avec ligatures activées (font-variant-ligatures: contextual). Taille : 13px dans les blocs de commandes.
+Physique des Animations : Toutes les transitions d'onglets et d'ouverture de tiroirs (Drawers) utilisent un ressort Framer Motion : { type: 'spring', stiffness: 380, damping: 30 }.
+Feedback de Copie : Lorsqu'un utilisateur clique sur le bouton [Copier] d'une commande, l'icône Clipboard se transforme en coche verte (#059669) avec un rebond scale(1.15), et un toast lumineux apparaît en bas à droite pendant 2200ms.
+2. Architecture Globale de l'Interface : Emplacement de Chaque Bouton & Section
+La fenêtre principale d'OmniShell Studio (dimensions minimales : 1180x740px, ouverture par défaut en 1440x900px) est divisée en 4 zones géométriques fixes qui ne clignotent jamais lors de la navigation.
+WIREFRAME TEXTUEL DE LA FENÊTRE PRINCIPALE (LAYOUT 4 ZONES)+----------------------------------------------------------------------------------------------------+| [Logo OmniShell]   [ 🔍 Rechercher une commande, IP, conteneur... (Ctrl+K) ]  [+ Drop] [📡 LAN] [⚙️] | <- ZONE A (56px)+----------------------+---------------------------------------------------+-------------------------+| ZONE B : SIDEBAR     | ZONE C : ESPACE DE TRAVAIL CENTRAL                | ZONE D : TIROIR         || (250px fixe)         | (Flexible : 1fr, fond #F8FAFC)                    | D'INSPECTION CONTEXTUEL ||                      |                                                   | (360px, pliable)        || NAVIGATION PRINCIPALE| [Barre de Filtres : Tous | Sudo | Favoris | Date] |                         || * ⚡ Command Vault    |                                                   | Détails de l'élément    || * 🐳 Docker & Infra  | +-----------------------------------------------+ | sélectionné :           || * 🗺️ NetMap Studio   | | [SUDO] [nmap]  nmap -sS -sV -p- 192.168.1.10  | | - Décomposition AST     || * 📂 ClassShare LAN  | | Exécuté 14 fois • Dernier: il y a 2h • kitty  | |   flag par flag         || * 🗄️ DBA & Merise    | |                              [⭐] [▶️] [Copier]| | - Ports ouverts / OS    ||                      | +-----------------------------------------------+ | - Permissions de partage|| CATÉGORIES AUTO      | +-----------------------------------------------+ | - Graphique de charge   || > 🐳 Docker (142)    | | [docker]  docker compose up -d --build        | |                         || > 🛡️ Réseau/Nmap (89)| | Exécuté 38 fois • Projet: ~/techevent-hub     | |                         || > 🐧 Système/Arch(210)| |                              [⭐] [▶️] [Copier]| |                         || > 🌿 Git & Dev (315) | +-----------------------------------------------+ |                         || > 🗄️ SQL & DB (64)   |                                                   |                         |+----------------------+---------------------------------------------------+-------------------------+| [🟢 Daemon Hook Actif : zsh, bash, fish, pwsh]  [SQLite: 14,820 cmds (4.2 MB)]  [Mode: 100% Offline]| <- STATUS BAR (28px)+----------------------------------------------------------------------------------------------------+
+
+2.1. Description Chirurgicale des Composants de la Zone A (Top Header Bar - 56px)
+Bouton 1 (Gauche - Logo & État) : Icône hexagonale bleue cobalt + texte « OmniShell Studio » en gras (15px) + badge pilule « v1.0 Local » en fond #DBEAFE et texte #1E40AF.
+Bouton 2 (Centre - OmniSearch Bar) : Champ de recherche large (480px) avec icône loupe à gauche, texte d'invite « Chercher une commande (ex: docker, nmap, ip), un conteneur ou une IP... » et badge raccourci « Ctrl+K » à droite. Cliquer dessus ou appuyer sur Ctrl+K ouvre la modale Spotlight instantanée (< 5ms).
+Bouton 3 (Droite - Action Rapide '+ Quick Share') : Bouton bleu cobalt (#2563EB, texte blanc, bord arrondi 8px) permettant de déposer immédiatement un fichier/dossier pour générer un code à 6 chiffres et un QR Code en 1 clic.
+Bouton 4 (Droite - Sélecteur d'Interface Réseau) : Menu déroulant affichant l'interface active (ex: « wlan0 : 192.168.1.45 » ou « eth0 : 10.0.0.12 ») avec une pastille verte pulsante.
+Bouton 5 (Droite - Réglages & Sync Historique) : Bouton icône engrenage + bouton « 🔄 Re-scanner les historiques » qui force la ré-ingestion des fichiers .zsh_history, .bash_history et PowerShell.
+3. Module 1 : Command Intelligence Vault & Rétro-Ingestion Historique
+Ce module est le cœur quotidien de l'application. Dès la première installation (via apt, yay, .deb, .bin ou .exe) et avant même que l'utilisateur ne tape une nouvelle commande, le logiciel fouille automatiquement le système pour récupérer, nettoyer, dédupliquer et classer toutes les commandes tapées par le passé.
+3.1. Moteur de Rétro-Ingestion Automatique au Premier Lancement (First-Run Backfill)
+Au démarrage du daemon Rust, le thread d'ingestion scanne les chemins suivants selon l'OS détecté :
+Système / Shell
+Chemins des Fichiers d'Historique Scannés
+Format de Parsing & Particularités Gérées
+Linux / macOS - Zsh
+~/.zsh_history, ~/.zhistory, $HISTFILE
+Gère le format étendu `: 1728900000:0;sudo pacman -Syu` (extraction du timestamp Unix et de la durée) ainsi que les lignes multi-lignes avec antislash `\`.
+Linux / macOS - Bash
+~/.bash_history
+Gère le format standard ligne par ligne ainsi que les lignes de timestamp `#1728900000` lorsque HISTTIMEFORMAT est activé.
+Linux / macOS - Fish
+~/.local/share/fish/fish_history
+Parse la structure pseudo-YAML de Fish (`- cmd: ...`, `  when: ...`, `  paths: ...`) pour extraire la commande exacte, la date et les chemins utilisés.
+Windows - PowerShell
+%APPDATA%\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+Lit l'historique persistant de PSReadLine (PowerShell 5.1 et PowerShell 7+), gère l'encodage UTF-8/UTF-16LE et les backticks de continuation.
+Terminaux Émulés
+kitty, Alacritty, GNOME Terminal, Konsole, Windows Terminal, WezTerm
+Détecte l'émulateur parent via l'arbre des processus ($TERM_PROGRAM, PPID) lors de la capture en temps réel et l'associe à chaque commande.
+
+3.2. Capture Temps Réel des Nouvelles Commandes (Shell Hooks Non-Intrusifs)
+Lors de l'installation du paquet, OmniShell Studio injecte un hook ultra-léger (temps d'exécution < 1.5 milliseconde, asynchrone en arrière-plan pour ne jamais ralentir le prompt) dans ~/.bashrc, ~/.zshrc, ~/.config/fish/config.fish et $PROFILE (PowerShell). À chaque validation d'une commande (preexec / precmd), le hook envoie via un Socket Unix local (/tmp/omnishell.sock sur Linux/macOS) ou un Named Pipe (\\.\pipe\omnishell sur Windows) un paquet JSON contenant :
+PAYLOAD JSON DU SHELL HOOK TEMPS RÉEL{  "raw_command": "sudo docker run -d -p 8080:80 --name web-nginx nginx:alpine",  "working_directory": "/home/bernard/projects/glpi-stack",  "shell": "zsh",  "terminal_emulator": "kitty",  "exit_code": 0,  "duration_ms": 1420,  "timestamp": 1760515440}
+
+3.3. Algorithme AST de Normalisation, Détection Sudo et Catégorisation Automatique
+Le problème majeur des gestionnaires d'historique classiques est qu'ils classent `sudo docker ps` sous `sudo` au lieu de `docker`. Le moteur Rust d'OmniShell Studio exécute un pipeline lexical en 5 étapes :
+Étape 1 (Détection et Extraction des Wrappers de Privilèges) : Si la commande commence par `sudo`, `doas`, `pkexec`, `su -c`, `nohup`, `time`, `watch` ou `env VAR=val`, le parseur active le booléen `is_privileged = true` (qui affichera un badge ambre [SUDO] dans l'UI) et extrait le véritable binaire cible qui suit.
+Étape 2 (Identification du Binaire Racine & Sous-Commande) : Pour `sudo docker compose -f prod.yml up -d`, le binaire racine est `docker` et la sous-commande est `compose up`. Pour `ip -c addr show wlan0`, le binaire racine est `ip` et la sous-commande est `addr`.
+Étape 3 (Classification Taxonomique en 12 Grandes Catégories & 50+ Sous-Sections) : Chaque binaire est rattaché à une arborescence claire affichée dans la Sidebar gauche :
+Catégorie Principale (Sidebar)
+Sous-Sections Automatiques
+Exemples de Binaires Regroupés Automatiquement
+🐳 Conteneurs & Orchestration
+Containers, Images, Compose, Volumes, Réseaux, K8s
+docker, docker-compose, podman, kubectl, helm, minikube, lazydocker
+🛡️ Réseau, Scan & Sécurité
+Interfaces IP, Scan Nmap, Firewall, Capture, VPN, DNS
+nmap, ip, ifconfig, ss, netstat, tcpdump, tshark, bettercap, ufw, iptables, wg, dig
+🐧 Paquets & Admin Linux/Win
+Arch/Pacman, Debian/Apt, Systemd, Processus, Disques
+pacman, yay, paru, apt, apt-get, dpkg, systemctl, journalctl, htop, ps, kill, lsblk, mount, winget
+📁 Fichiers & Navigation
+Listing, Recherche, Archives, Permissions, Transfert
+ls, eza, ll, find, fd, grep, rg, tar, zip, unzip, chmod, chown, cp, mv, rsync, scp
+🌿 Git & Contrôle de Version
+Commits, Branches, Remotes, Stash, Logs, GitHub CLI
+git, gh, glab, lazygit
+🗄️ Bases de Données & SQL
+PostgreSQL, MySQL/MariaDB, SQLite, Redis, Migrations
+psql, pg_dump, mysql, mysqldump, mariadb, sqlite3, redis-cli, prisma, sqlcmd
+🤖 IA, Python & Data Science
+Environnements, LLMs Locaux, Entraînement, Notebooks
+ollama, python, python3, pip, uv, poetry, conda, jupyter, torchrun, huggingface-cli
+⚙️ Dev Web, .NET & Mobile
+Node/PHP/Laravel, C#/.NET, Flutter/Dart, Rust
+php, artisan, composer, npm, pnpm, bun, dotnet, flutter, dart, cargo, go
+
+Étape 4 (Masquage de Secrets & Sécurité) : Avant toute écriture dans SQLite, un filtre Regex haute performance détecte les mots de passe ou tokens passés en clair (ex: `-pMonMotDePasse`, `AWS_SECRET_ACCESS_KEY=...`, `Bearer eyJ...`, URLs `postgres://user:pass@host`) et remplace la valeur sensible par `••••••••` tout en permettant à l'utilisateur de définir une variable de remplacement.
+Étape 5 (Paramétrisation Dynamique des Commandes) : Lorsqu'une commande contient une IP (`192.168.1.50`), un port (`8080`) ou un nom de conteneur, l'UI propose un bouton [⚡ Convertir en Template]. En cliquant sur [Copier], si la commande possède des variables (ex: `nmap -sV {{target_ip}}`), une mini-bulle demande la nouvelle IP avant de copier la commande finale dans le presse-papier.
+4. Module 2 : Snapshot Offline Docker & Infrastructure + DBA/UML Studio
+L'utilisateur veut pouvoir consulter tous ses conteneurs Docker (actifs ou anciens), leurs ports, leurs volumes et les commandes exactes qui ont servi à les lancer, même lorsque le démon Docker est éteint ou qu'il n'a aucune connexion Internet pour demander de l'aide à une IA.
+4.1. Synchronisation Continue & Cache Offline des Conteneurs Docker
+Connexion au Socket Local : Le backend Rust écoute en continu `/var/run/docker.sock` (Linux/macOS) ou `//./pipe/docker_engine` (Windows) dès que Docker est actif.
+Snapshot SQLite Persistant : Chaque fois qu'un conteneur démarre, change d'état ou est créé, OmniShell Studio sauvegarde dans la table `docker_containers_cache` : l'ID du conteneur, son nom, l'image, les ports mappés (ex: `0.0.0.0:8080->80/tcp`), les volumes montés (`HostPath -> ContainerPath`), le réseau Docker, les variables d'environnement non-sensibles, les 200 dernières lignes de logs et surtout la commande `docker run` ou le fichier `docker-compose.yml` exact qui l'a généré.
+Consultation 100% Hors-Ligne (Sans Internet ni IA) : Dans l'onglet « 🐳 Docker & Infra », l'utilisateur voit la grille de tous ses conteneurs sous forme de cartes blanches élégantes. En cliquant sur un conteneur (ex: `glpi-app` ou `postgres-db`), le Tiroir d'Inspection (Zone D) affiche instantanément un générateur d'actions prêtes à copier en 1 clic :
+BOUTONS D'ACTIONS PRÉ-GÉNÉRÉES PAR CONTENEUR (SANS AVOIR À CHERCHER SUR INTERNET)1. [🐚 Entrer en Shell]      -> Copie : docker exec -it glpi-app /bin/sh (ou /bin/bash détecté automatiquement)2. [📜 Voir Logs Temps Réel] -> Copie : docker logs -f --tail 100 glpi-app3. [🔄 Redémarrer Propre]    -> Copie : docker restart glpi-app4. [🔍 Inspecter IP Interne] -> Copie : docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' glpi-app5. [💾 Backup Base/Volume]   -> Copie la commande exacte de sauvegarde du volume ou pg_dump/mysqldump associé6. [🧬 Commande d'Origine]   -> Restitue la commande exacte `docker run ...` que l'utilisateur avait tapée il y a 3 mois !
+
+4.2. Sous-Module DBA, SQL, Merise (MCD/MLD) & UML Offline
+Pour répondre aux besoins des étudiants en informatique, des administrateurs BD et des architectes logiciels, l'onglet « 🗄️ DBA & Merise » intègre un parseur local qui capture les fichiers `.sql` ou les commandes `psql`/`mysql` exécutées :
+Rétro-Ingénierie SQL vers Merise / UML : Collez un script DDL SQL (ou sélectionnez une base SQLite/PostgreSQL/MySQL locale) et OmniShell génère instantanément sur un canevas blanc interactif le Modèle Conceptuel de Données (MCD Merise avec Entités, Associations et Cardinalités 0,n / 1,1), le MLD et le Diagramme de Classes UML.
+Dictionnaire de Commandes DBA Hors-Ligne : Accès immédiat aux commandes de création d'utilisateurs, gestion des privilèges GRANT, dumps compressés, restauration et optimisation d'index pour PostgreSQL, MySQL/MariaDB, Oracle et SQLite.
+5. Module 3 : NetMap Studio — Cartographie Réseau Automatique de A à Z
+Une fois connecté à un réseau (Wi-Fi de campus, Ethernet d'entreprise, laboratoire GNS3/Packet Tracer ou partage de connexion), l'utilisateur ouvre l'onglet « 🗺️ NetMap Studio », sélectionne une interface réseau et clique sur [🔍 Scanner & Cartographier le Réseau]. Le logiciel reconstruit visuellement toute l'architecture : depuis l'ISP (FAI) et Internet jusqu'aux terminaux finaux.
+5.1. Pipeline de Découverte Multi-Couches (Du FAI jusqu'aux Terminaux)
+Couche Architecturale
+Techniques & Protocoles Utilisés par le Moteur Rust
+Informations Affichées sur le Noeud Visuel
+1. FAI (ISP) & WAN Internet
+Requête STUN/HTTP (si Internet actif) ou cache local ASN/Whois + sonde DNS publique (1.1.1.1 / 8.8.8.8)
+Nom du FAI (ex: Togo Cellulaire / Moov / Canalbox), IP Publique WAN, ASN, Latence WAN en ms, État de la liaison Internet.
+2. Routeur / Passerelle (Gateway)
+Lecture de la table de routage noyau (`ip route show default` / API Windows `GetIpForwardTable`) + Traceroute ICMP/UDP TTL 1..4
+IP Passerelle (ex: 192.168.1.1), Adresse MAC, Constructeur OUI (Cisco, Ubiquiti, MikroTik, TP-Link), Services DHCP/DNS actifs.
+3. Switches & Points d'Accès
+Écoute passive des trames LLDP (EtherType 0x88CC), CDP Cisco (0x2000), requêtes SNMPv2c/v3 (sysDescr, dot1dTpFdbTable) et BSSID Wi-Fi
+Nom du Switch/AP (ex: UniFi-AP-AC-Pro ou Cisco-2960), VLAN ID détecté, Port physique, Vitesse du lien (1000 Mbps).
+4. Serveurs Locaux & Infra
+Scan SYN/Connect asynchrone ultra-rapide sur les ports clés (22, 53, 80, 443, 445, 3306, 5432, 8006, 8080, 9000) + Banner Grabbing
+Classification automatique en tant que [Serveur Web], [Serveur DB], [Serveur AD/Samba], [Proxmox/ESXi] ou [Imprimante Réseau SNMP].
+5. Terminaux (PC, Mobiles, IoT)
+Sweep ARP actif (paquets ARP Request sur tout le sous-réseau /24) + résolution mDNS (Bonjour/Avahi : _workstation._tcp), NetBIOS (Port 137) et SSDP
+Hostname (ex: Lenovo-V15-Arch, iPhone-SE), IP locale, MAC, OS deviné par empreinte TTL/TCP Window, Latence ping.
+
+5.2. Interface Visuelle du Canevas Topologique (Style Cisco / Ubiquiti Clair)
+Grille Pointillée Lumineuse : Le canevas central utilise React Flow (personnalisé) avec un fond `#F8FAFC` parsemé de micro-points `#CBD5E1` espacés de 20px.
+Disposition Hiérarchique Automatique (Dagre Layout) : Niveau 0 (Haut) : Nuage Internet & FAI -> Niveau 1 : Routeur/Firewall -> Niveau 2 : Switches & Points d'Accès Wi-Fi -> Niveau 3 : Serveurs & Imprimantes -> Niveau 4 (Bas) : Terminaux (PC, Laptops, Smartphones).
+Interaction au Clic sur un Noeud : Cliquer sur n'importe quel équipement (ex: un serveur `192.168.1.200`) ouvre le Tiroir d'Inspection (Zone D) qui affiche ses ports ouverts et propose des boutons d'action directe : [⚡ Copier commande SSH], [🔍 Lancer Nmap Approfondi], [🌐 Ouvrir Interface Web], [📡 Tester Ping Continu]. Toutes ces commandes sont automatiquement enregistrées dans le Command Vault !
+Export de l'Architecture : Barre d'outils en haut à droite du canevas avec boutons : [📸 Exporter PNG Haute-Résolution], [📐 Exporter SVG Vectoriel], [📄 Exporter Rapport PDF/JSON].
+6. Module 4 : ClassShare LAN — Serveur de Partage de Fichiers & Dossiers Sans Internet
+Conçu spécifiquement pour les salles de classe, les travaux pratiques universitaires, les réunions techniques ou les interventions sur site sans connexion Internet. Un enseignant (« Maître / Host ») ou un chef de projet partage des fichiers ou des dossiers entiers sur le réseau local en quelques secondes, avec un contrôle total des permissions.
+6.1. Parcours Utilisateur Complet du « Maître » (Host) et des « Pairs » (Étudiants/Collègues)
+1. Création de la Salle par le Maître : Dans l'onglet « 📂 ClassShare LAN », le Maître glisse-dépose un fichier ou un dossier complet (ex: `TP_Reseau_CCNA.zip` ou un dossier `Cours_Laravel/`). Le backend Rust compresse à la volée les dossiers en flux streaming `.tar.zst` ou les expose en arborescence directe, démarre un serveur Axum HTTP/2 + WebSockets sur un port dynamique (ex: `0.0.0.0:49152`) et annonce la session via mDNS (`_omnishell-share._tcp.local.`).
+2. Génération Automatique du Code à 6 Chiffres & du QR Code : L'interface affiche immédiatement en grand un Code PIN à 6 chiffres (ex: `482 - 915`) et un QR Code haute densité. Le code à 6 chiffres encode de manière déterministe le dernier octet (ou les deux derniers octets) de l'IP locale du Maître + un jeton de session HMAC de 3 chiffres, permettant aux autres instances d'OmniShell Studio de trouver le serveur même si le routeur de l'école bloque le multicast mDNS !
+3. Connexion des Pairs (Avec ou Sans l'Application Installée) : • Si l'étudiant possède OmniShell Studio : il clique sur [Rejoindre une Salle], tape les 6 chiffres `482915`, et accède instantanément à l'explorateur de fichiers partagés.• Si l'étudiant est sur un téléphone (iPhone/Android) ou un PC sans l'application : il scanne le QR Code et accède à une interface Web embarquée ultra-rapide (servie directement par le binaire Rust du Maître, sans Internet) où il saisit le code PIN pour télécharger ou téléverser des fichiers.
+6.2. Gestion Temps Réel des Utilisateurs Connectés & Permissions Dynamiques (RBAC)
+Le panneau de contrôle du Maître affiche en temps réel la liste de tous les utilisateurs connectés (Nom de l'appareil, Adresse IP, Bande passante consommée, Fichiers téléchargés). Pour chaque utilisateur, le Maître dispose de 3 interrupteurs (toggles) instantanés pilotés par WebSockets :
+Contrôle sur la Carte Utilisateur
+État par Défaut
+Comportement Technique Exact en Temps Réel
+Switch [📤 Autoriser Upload / Partage]
+DÉSACTIVÉ (Lecture Seule)
+Quand le Maître l'active pour un étudiant précis, l'interface de cet étudiant déverrouille instantanément la zone « Glisser-déposer un fichier ou dossier vers la classe ». Le jeton JWT de cet étudiant passe du rôle `READER` au rôle `CONTRIBUTOR`.
+Bouton [⏸️ Suspendre / Retirer Droit]
+Actif à tout moment
+Révoque immédiatement le droit d'upload de l'utilisateur sans le déconnecter de la salle (repasse en `READER`).
+Bouton [🚫 Expulser (Kick / Ban IP)]
+Actif à tout moment
+Coupe la connexion WebSocket, invalide le jeton de session et bloque toute requête HTTP provenant de son couple (IP, Fingerprint) pour la session en cours.
+
+6.3. Déconnexion / Reconnexion Transparente & Reprise de Transfert (Resumable Chunking)
+Si un utilisateur ferme son ordinateur, perd le Wi-Fi temporairement ou clique sur [⏸️ Quitter temporairement], puis revient 15 minutes plus tard :
+Persistance du Jeton de Session : L'application conserve en SQLite le `session_token` et l'empreinte cryptographique Ed25519 du pair. Dès que le réseau est rétabli, OmniShell Studio se reconnecte automatiquement au Maître sans redemander le code à 6 chiffres et restaure ses permissions exactes (y compris son droit d'upload si le Maître le lui avait accordé).
+Transferts Découpés en Blocs (Chunked HTTP Range + BLAKE3) : Les gros fichiers (ex: ISO Linux de 4 Go ou VM VirtualBox) sont découpés en blocs de 4 Mo vérifiés par hachage BLAKE3. Si la connexion coupe à 67%, la reconnexion reprend exactement au bloc suivant via l'en-tête `Range: bytes=...` sans perdre un seul octet.
+7. Architecture Backend, Schéma de Base de Données SQLite & Cache
+Le stockage local repose sur SQLite 3 configuré en mode haute concurrence (`PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA temp_store = MEMORY; PRAGMA mmap_size = 30000000000;`) combiné à l'extension FTS5 (Full-Text Search avec tokenizer trigram) pour garantir une recherche en moins de 3 millisecondes sur plus de 500 000 commandes.
+SCHÉMA DDL SQLITE COMPLET (À GÉNÉRER DANS src-tauri/migrations/001_init.sql)CREATE TABLE IF NOT EXISTS command_history (    id INTEGER PRIMARY KEY AUTOINCREMENT,    cmd_hash TEXT NOT NULL UNIQUE,           -- Hash BLAKE3 de la commande normalisée    raw_command TEXT NOT NULL,               -- Commande complète (secrets masqués)    clean_command TEXT NOT NULL,             -- Commande sans le préfixe sudo/time    root_binary TEXT NOT NULL,               -- Ex: 'docker', 'nmap', 'ip', 'pacman'    sub_command TEXT,                        -- Ex: 'compose up', 'addr show', '-Syu'    category_slug TEXT NOT NULL,             -- Ex: 'containers', 'network', 'system'    is_sudo INTEGER NOT NULL DEFAULT 0,      -- 1 si exécuté avec sudo/doas/Admin    shell_source TEXT NOT NULL,              -- 'zsh', 'bash', 'fish', 'pwsh'    terminal_app TEXT,                       -- 'kitty', 'gnome-terminal', 'wt'    working_dir TEXT,                        -- Dernier dossier d'exécution    execution_count INTEGER NOT NULL DEFAULT 1,    last_exit_code INTEGER DEFAULT 0,    is_favorite INTEGER NOT NULL DEFAULT 0,    first_seen_at INTEGER NOT NULL,    last_executed_at INTEGER NOT NULL);CREATE VIRTUAL TABLE IF NOT EXISTS command_fts USING fts5(    raw_command, root_binary, sub_command, category_slug, working_dir,    content='command_history', content_rowid='id', tokenize='trigram');CREATE TABLE IF NOT EXISTS docker_snapshots (    container_id TEXT PRIMARY KEY,    container_name TEXT NOT NULL,    image_name TEXT NOT NULL,    status_state TEXT NOT NULL,              -- 'running', 'exited', 'paused'    ports_json TEXT NOT NULL,                -- Mapping JSON des ports    mounts_json TEXT NOT NULL,               -- Volumes montés    origin_cli_command TEXT,                 -- Commande docker run reconstituée    compose_project_path TEXT,    last_seen_at INTEGER NOT NULL);CREATE TABLE IF NOT EXISTS netmap_topologies (    id TEXT PRIMARY KEY,    network_ssid_or_cidr TEXT NOT NULL,    isp_name TEXT,    wan_ip TEXT,    gateway_ip TEXT NOT NULL,    gateway_mac TEXT,    nodes_json TEXT NOT NULL,                -- Graphe complet des hôtes et switches    edges_json TEXT NOT NULL,                -- Liens physiques/logiques et latences    scanned_at INTEGER NOT NULL);CREATE TABLE IF NOT EXISTS lan_share_sessions (    session_id TEXT PRIMARY KEY,    pin_code TEXT NOT NULL,    host_ip TEXT NOT NULL,    port INTEGER NOT NULL,    peers_permissions_json TEXT NOT NULL,    -- Etat RBAC des pairs connectés    created_at INTEGER NOT NULL,    is_active INTEGER NOT NULL DEFAULT 1);
+
+8. Gestion Exhaustive des Cas d'Exception & Résilience
+Le logiciel ne doit jamais crasher ni afficher d'écran blanc. Chaque cas limite système ou réseau est intercepté par un type `Result<T, OmniError>` en Rust et traduit en action corrective claire dans l'interface :
+Code d'Exception
+Scénario Déclencheur
+Comportement de Repli (Fallback) & Message UI
+ERR_HIST_CORRUPT
+Fichier .zsh_history ou .bash_history contenant des octets non-UTF8 (binaire corrompu).
+Utilisation de `String::from_utf8_lossy` ligne par ligne. Les lignes corrompues sont ignorées sans bloquer l'importation des 15 000 autres commandes.
+ERR_RAW_SOCKET_PERM
+L'utilisateur lance un scan NetMap sur Linux sans les capacités `CAP_NET_RAW` pour l'ARP/ICMP.
+Bascule automatique et transparente en mode « Unprivileged TCP Connect + Lecture Table ARP Noyau (`/proc/net/arp`) + mDNS » et affiche une bannière douce proposant d'activer `setcap cap_net_raw+ep` en un clic.
+ERR_DOCKER_OFFLINE
+Le service `docker.service` ou Docker Desktop est arrêté.
+Affiche un badge « 🟠 Mode Snapshot Hors-Ligne : Consultation du cache local » et permet quand même de parcourir tous les anciens conteneurs et de copier leurs commandes.
+ERR_MDNS_BLOCKED
+Le Wi-Fi de l'école ou de l'entreprise bloque le multicast UDP 5353 (Client Isolation partiel).
+Le code à 6 chiffres encode directement l'adresse IP locale et le port du Maître en Base-10 compactée : la connexion directe TCP fonctionne donc à 100% sans mDNS.
+ERR_DISK_QUOTA
+Un étudiant autorisé tente d'envoyer un fichier de 50 Go qui saturerait le disque du Maître.
+Vérification préalable de l'espace libre via `sysinfo` + limite configurable par le Maître (par défaut : 2 Go max par fichier). Rejet HTTP 413 immédiat avec notification claire.
+
+9. Packaging & Distribution Multi-Plateforme (apt, yay, .deb, .bin, .exe)
+Arch Linux (AUR - yay / paru) : Deux paquets maintenus : `omnishell-studio` (compilation depuis les sources Rust/Node) et `omnishell-studio-bin` (installation instantanée en 5 secondes depuis le binaire pré-compilé). Le script `post_install` configure automatiquement `setcap cap_net_raw,cap_net_admin+eip /usr/bin/omnishell` pour éviter d'avoir à lancer l'application en root lors des scans réseau.
+Debian / Ubuntu / Kali / Mint (apt & .deb) : Paquet `.deb` officiel généré par `cargo tauri build --bundles deb` + dépôt APT signé par clé GPG (`deb [signed-by=/etc/apt/keyrings/omnishell.gpg] https://apt.omnishell.dev stable main`).
+Binaire Portable Linux (.bin / AppImage) : Fichier unique exécutable sans droits root pour tout serveur ou poste de TP restreint.
+Windows 10 / 11 (.exe NSIS / .msi / winget) : Installateur `.exe` signé qui ajoute l'entrée au menu Démarrer, enregistre la règle de pare-feu Windows pour le partage LAN et installe le hook dans le profil PowerShell.

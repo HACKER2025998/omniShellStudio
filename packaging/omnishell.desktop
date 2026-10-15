@@ -1,0 +1,9 @@
+# Lanceur Linux sans terminal visible pour le bureau.
+[Desktop Entry]
+Type=Application
+Name=OmniShell Studio
+Comment=Votre atelier système hors ligne
+Exec=omnishell
+Icon=omnishell
+Terminal=false
+Categories=Development;System;

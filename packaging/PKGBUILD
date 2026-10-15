@@ -1,0 +1,46 @@
+# Construction locale : ce manifeste ne prétend pas être publié sur l'AUR.
+pkgname=omnishell-studio
+# La version est alignée sur Cargo, package.json et la configuration Tauri.
+pkgver=0.1.0
+# Incrémenter cette valeur quand seul le packaging change.
+pkgrel=1
+# La description est affichée par pacman avant l'installation.
+pkgdesc='Atelier local de commandes, infrastructure, réseau, partage LAN et SQL'
+# Les deux architectures doivent être construites sur leurs systèmes respectifs.
+arch=('x86_64' 'aarch64')
+# L'URL désigne le projet et ne représente pas un dépôt APT ou AUR actif.
+url='https://github.com/xhackerip/omnishell-studio'
+# Le code propre au projet est distribué sous MIT.
+license=('MIT')
+# Les bibliothèques WebView sont fournies par le système.
+depends=('webkit2gtk-4.1' 'gtk3' 'libayatana-appindicator')
+# Les sources locales sont préparées par l'utilisateur, aucune archive non vérifiée n'est téléchargée.
+makedepends=('rust' 'cargo' 'nodejs' 'npm' 'pkgconf' 'openssl')
+# Exécuter makepkg depuis un répertoire contenant omnishell-studio.tar.gz.
+source=('omnishell-studio.tar.gz')
+# makepkg -g produit le checksum réel avant distribution ; ne publiez pas ce SKIP.
+sha256sums=('SKIP')
+# Le répertoire source de l'archive doit porter le nom omnishell-studio.
+build() {
+  # Le lockfile Node évite une résolution implicite de dépendances.
+  cd "$srcdir/omnishell-studio"
+  # Les scripts de construction embarquent également le client LAN.
+  npm ci
+  # Le binaire desktop est construit sans essayer de fabriquer un paquet Debian sur Arch.
+  npm run build
+  # Cargo utilise le lockfile suivi dans le dépôt.
+  cargo build --locked --release --features desktop --manifest-path src-tauri/Cargo.toml
+}
+# L'installation n'accorde aucune capacité réseau ni accès root permanent au logiciel.
+package() {
+  # Copie uniquement les fichiers nécessaires à l'exécution du bureau.
+  cd "$srcdir/omnishell-studio"
+  # Le nom CLI attendu par les hooks reste omnishell.
+  install -Dm755 src-tauri/target/release/omnishell "$pkgdir/usr/bin/omnishell"
+  # Le lanceur système pointe vers ce même exécutable.
+  install -Dm644 packaging/omnishell.desktop "$pkgdir/usr/share/applications/omnishell.desktop"
+  # L'icône reste une ressource locale de la distribution.
+  install -Dm644 src-tauri/icons/128x128.png "$pkgdir/usr/share/icons/hicolor/128x128/apps/omnishell.png"
+  # La licence est installée avec le paquet.
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

@@ -1,0 +1,50 @@
+[package]
+name = "omnishell-studio"
+version = "0.1.0"
+edition = "2021"
+authors = ["Kossi Bernard Etonam ADJOGBLE"]
+description = "Local-first workstation for commands, infrastructure and classrooms"
+license = "MIT"
+
+[lib]
+name = "omnishell_core"
+path = "src/lib.rs"
+
+[[bin]]
+name = "omnishell"
+path = "src/main.rs"
+
+[features]
+default = []
+desktop = ["dep:tauri", "dep:tauri-build"]
+
+[build-dependencies]
+tauri-build = { version = "2", optional = true , features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
+regex = "1"
+blake3 = "1"
+shlex = "1"
+dirs = "6"
+tokio = { version = "1", features = ["full"] }
+axum = { version = "0.8", features = ["ws", "multipart"] }
+tower-http = { version = "0.6", features = ["fs", "limit"] }
+rand = "0.9"
+qrcode = { version = "0.14", default-features = false, features = ["svg"] }
+if-addrs = "0.13"
+sqlparser = "0.55"
+tauri = { version = "2", optional = true , features = [] }
+
+# Le transport LAN est chiffré et la découverte reste confinée au multicast local.
+rustls = "0.23"
+axum-server = { version = "0.7", features = ["tls-rustls"] }
+rcgen = "0.13"
+mdns-sd = "0.13"
+fs2 = "0.4"
+
+[dev-dependencies]
+# Le client HTTPS sert uniquement aux tests d'intégration du serveur embarqué.
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
