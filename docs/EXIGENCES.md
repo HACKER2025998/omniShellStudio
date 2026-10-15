@@ -28,7 +28,7 @@ Les deux documents intégraux sont conservés dans `specifications/`. La réalis
 | Recherche <5 ms /100 000 lignes | Atteinte dans le protocole local documenté, p99 1,73 ms |
 | Paquet <14 Mo | Paquet Debian local : 12,97 Mio (environ 13,60 Mo), service autonome inclus |
 | Daemon <12 Mo | Atteint dans le profil local : 7,8 Mio RSS / 5,3 Mio PSS, binaire distinct sans WebView ; rapport dans `benchmarks/resources-linux.json` |
-| Bureau <55 Mo | **Non atteint sur la machine de recette** avec Tauri/WebKit et ses processus enfants ; aucun chiffre parent seul n’est utilisé pour masquer cet écart |
+| Bureau ≤400 Mio PSS, profil Linux de référence | **Atteint dans ce profil** : pic de 307,1 Mio PSS, processus parent et descendants inclus. Remplace le seuil initial de 55 Mo après arbitrage utilisateur du 15 octobre 2026, avec maintien de Rust/Tauri/React ; voir `RECETTE.md` |
 | Trois plateformes | Matrice de tests et installateurs GitHub Actions ; le succès réel des jobs fait foi, pas la simple présence du YAML |
 | Publication APT/AUR/winget et signature | Outils de préparation et paquets ; registres, hébergement et identités de signature non créés fictivement |
 | Commentaires | Explications métier françaises et annotation de lignes des sources TS/TSX/Rust ; comparateur de sortie compilée sans changement de comportement |
@@ -45,4 +45,4 @@ Les deux documents intégraux sont conservés dans `specifications/`. La réalis
 
 ## Conditions pour annoncer une conformité stricte à 100 %
 
-Le code des fonctions ci-dessus est présent. La cible mémoire du bureau reste un écart mesuré à arbitrer avec la pile imposée. Les latences de hooks, la charge d’une classe complète, les équipements LLDP/CDP/SNMP réels, les versions des trois OS et les signatures de distribution doivent être réceptionnés dans leur environnement cible. Ces validations ne sont pas déclarées réussies sans preuve.
+Le code des fonctions ci-dessus est présent. La cible mémoire révisée du bureau est respectée dans le profil Linux de référence ; le seuil initial de 55 Mo est abandonné par décision utilisateur, et non présenté comme atteint. Les latences de hooks, la charge d’une classe complète, les équipements LLDP/CDP/SNMP réels, les versions des trois OS et les signatures de distribution doivent être réceptionnés dans leur environnement cible. Ces validations ne sont pas déclarées réussies sans preuve.

@@ -4,7 +4,7 @@ Le dépôt distant autorisé est `https://github.com/HACKER2025998/omniShellStud
 
 ## Version candidate
 
-La version courante est `1.0.0-rc.1`. Les fonctionnalités sont soumises aux tests locaux et à la matrice GitHub Actions. Le suffixe RC indique que les contraintes non validables sur cette machine, en particulier la mémoire du bureau et les signatures de plateforme, ne sont pas transformées en promesses de production.
+La version courante est `1.0.0-rc.1`. Les fonctionnalités sont soumises aux tests locaux et à la matrice GitHub Actions. Le suffixe RC indique que les contraintes non validables sur cette machine, en particulier les charges prolongées, les mesures mémoire Windows/macOS et les signatures de plateforme, ne sont pas transformées en promesses de production.
 
 ## Sources
 

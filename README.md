@@ -6,7 +6,7 @@ Un atelier desktop pour retrouver ses commandes, consulter son infrastructure sa
 
 Application locale : **Rust, Tauri v2, React 19, TypeScript, SQLite FTS5**. Interface claire Daylight. Les cinq espaces de travail partagent un stockage utilisateur. Leur fonctionnement local ne dépend d’aucun cloud ; une interrogation WAN externe est disponible uniquement à la demande explicite de l’utilisateur.
 
-Cette livraison porte le numéro **1.0.0-rc.1**. Elle complète les fonctions des cinq espaces avec analyse syntaxique multi-shell, événements Docker, découverte réseau multi-protocoles, dossiers compressés, reprise des salles, canevas interactifs et connexions SQL natives. Les exigences industrielles restent évaluées sur des mesures réelles : le budget mémoire du bureau n’est pas atteint sur la machine de recette. La [matrice de conformité](docs/EXIGENCES.md) précise les fonctionnalités réalisées, les variantes retenues et les points encore absents.
+Cette livraison porte le numéro **1.0.0-rc.1**. Elle complète les fonctions des cinq espaces avec analyse syntaxique multi-shell, événements Docker, découverte réseau multi-protocoles, dossiers compressés, reprise des salles, canevas interactifs et connexions SQL natives. Les exigences industrielles restent évaluées sur des mesures réelles : la cible mémoire révisée du bureau est respectée dans le profil Linux de référence (307,1 Mio PSS pour un plafond de 400 Mio). La [matrice de conformité](docs/EXIGENCES.md) précise les fonctionnalités réalisées, les variantes retenues et les points encore absents.
 
 ![Interface du coffre — données de fixture utilisées uniquement par le test UI](docs/screenshots/coffre.png)
 
@@ -468,7 +468,7 @@ La [matrice](docs/EXIGENCES.md) fait foi. Les grandes fonctions de la première 
 
 Mesures locales de référence : recherche sur **100 000 commandes**, médiane **1,37 ms**, p95 **1,61 ms**, p99 **1,73 ms** ; paquet Debian **12,97 Mio**, service autonome inclus. Les rapports reproductibles sont dans [docs/benchmarks](docs/benchmarks). `npm run benchmark` mesure la vraie ouverture SQLite, le filtre, le comptage et la sérialisation ; le rendu UI est exclu.
 
-La mémoire du bureau Tauri/WebKit **dépasse la cible de 55 Mo sur cette machine**. Le rapport distingue RSS et PSS et inclut les renderers ; ce seuil ne doit pas être déclaré atteint en ne comptant que le processus parent. Le daemon est distribué comme binaire séparé sans WebView pour éviter les bibliothèques graphiques en tâche de fond. Ces mesures ne sont pas extrapolées à Windows ou macOS.
+La pile **Rust/Tauri/React est conservée**, conformément à l’arbitrage utilisateur du 15 octobre 2026. Le seuil initial de 55 Mo est remplacé par une cible de **400 Mio PSS pour le bureau et tous ses descendants**, dans le profil Linux décrit dans la [recette](docs/RECETTE.md). Le pic enregistré est de **307,1 Mio PSS** ; les **675,2 Mio RSS cumulés** restent publiés séparément. Cette marge vise les variations de démarrage ; elle ne garantit pas la consommation sous toute charge. Le daemon est distribué comme binaire séparé sans WebView pour éviter les bibliothèques graphiques en tâche de fond. Ces mesures ne sont pas extrapolées à Windows ou macOS.
 
 Les installateurs de la matrice CI ne sont pas signés par une identité commerciale non fournie. Les outils et prérequis de publication APT/AUR/Windows/macOS sont décrits dans [DISTRIBUTION.md](docs/DISTRIBUTION.md). Le push GitHub ne prétend pas avoir créé un domaine APT, une signature Apple ou une publication winget.
 

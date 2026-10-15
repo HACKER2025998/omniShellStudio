@@ -72,6 +72,14 @@ Les chiffres client restent des cibles tant que ce protocole n'est pas exécuté
 
 ## Mesures enregistrées
 
-Le rapport `benchmarks/search-linux.json` utilise cent mille commandes synthétiques et deux cents recherches complètes : médiane 1,37 ms, p95 1,61 ms, p99 1,73 ms. Le rapport `benchmarks/resources-linux.json` inclut les descendants du processus : daemon dédié 7 996 Kio RSS / 5 378 Kio PSS ; bureau 691 396 Kio RSS cumulés / 314 450 Kio PSS. Les pages partagées sont comptées plusieurs fois dans la somme RSS ; PSS ne doit pas être présenté comme RSS. Le bureau n’atteint pas le budget de 55 Mo.
+Le rapport `benchmarks/search-linux.json` utilise cent mille commandes synthétiques et deux cents recherches complètes : médiane 1,37 ms, p95 1,61 ms, p99 1,73 ms. Le rapport `benchmarks/resources-linux.json` inclut les descendants du processus : daemon dédié 7 996 Kio RSS / 5 378 Kio PSS ; bureau 691 396 Kio RSS cumulés / 314 450 Kio PSS. Les pages partagées sont comptées plusieurs fois dans la somme RSS ; PSS ne doit pas être présenté comme RSS. Le bureau atteint la cible révisée de 400 Mio PSS dans ce profil : 314 450 Kio, soit 307,1 Mio. Le budget initial de 55 Mo n’est pas atteint et a été remplacé par décision utilisateur du 15 octobre 2026 pour conserver Rust/Tauri/React.
 
 Le script de mesure utilise un HOME/XDG privé, cent commandes synthétiques et un Docker indisponible ; il ne lit ni l’historique réel ni les conteneurs du compte. Les captures d’interface utilisent des fixtures, pas des données utilisateur.
+
+## Critère mémoire révisé
+
+L’utilisateur a choisi de conserver Rust/Tauri/React et d’accepter une cible réaliste mesurée. Le plafond de réception retenu pour le bureau est **400 Mio PSS (409 600 Kio)** sur Linux, soit environ 30 % de marge par rapport au pic enregistré. Il porte sur la somme PSS du processus principal et de tous ses descendants, relevée toutes les 250 ms pendant les huit premières secondes par `python scripts/measure-resources.py`, en build release, avec cent commandes synthétiques et Docker indisponible. Le daemon conserve son budget initial, vérifié séparément.
+
+Pour une nouvelle livraison, reconstruisez les deux binaires release, exécutez ce script dans une session graphique Linux et conservez son JSON avec le commit, les versions système et le matériel. Le bureau satisfait ce critère si `desktop.pss_kib` est positif et inférieur ou égal à 409 600, sans `early_exit`, et si les processus WebKit sont inclus. Une valeur absente ou un démarrage interrompu invalide la mesure. La somme RSS est informative : elle compte plusieurs fois certaines pages partagées et ne se compare pas au plafond PSS.
+
+Ce profil mesure le démarrage ; il ne certifie ni une journée d’utilisation, ni une salle complète, ni un import massif. Les mesures sous charge et sur Windows/macOS restent à produire avec un protocole et une métrique adaptés. Les documents client originaux conservent leur seuil historique de 55 Mo pour assurer la traçabilité.
