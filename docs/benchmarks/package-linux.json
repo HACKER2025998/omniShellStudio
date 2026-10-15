@@ -1,0 +1,22 @@
+{
+  "package": "OmniShell Studio_1.0.0-rc.1_amd64.deb",
+  "bytes": 13602718,
+  "mib": 12.973,
+  "sha256": "45089d3df41850b5effcfdf9de3db9aa1064d6cebe43a0ec3b2cfa873f8e513b",
+  "binaries": [
+    "usr/bin/omnishell",
+    "usr/bin/omnishell-daemon"
+  ],
+  "icons": [
+    "usr/share/icons/hicolor",
+    "usr/share/icons/hicolor/256x256@2",
+    "usr/share/icons/hicolor/256x256@2/apps",
+    "usr/share/icons/hicolor/256x256@2/apps/omnishell.png",
+    "usr/share/icons/hicolor/128x128",
+    "usr/share/icons/hicolor/128x128/apps",
+    "usr/share/icons/hicolor/128x128/apps/omnishell.png",
+    "usr/share/icons/hicolor/32x32",
+    "usr/share/icons/hicolor/32x32/apps",
+    "usr/share/icons/hicolor/32x32/apps/omnishell.png"
+  ]
+}

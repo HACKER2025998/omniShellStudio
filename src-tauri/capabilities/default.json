@@ -1,1 +1,19 @@
-{"identifier":"default","description":"Fenêtre principale sans accès shell générique","windows":["main"],"permissions":["core:default"]}
+{
+  "identifier": "default",
+  "description": "Fen\u00eatre principale sans acc\u00e8s shell g\u00e9n\u00e9rique",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://*"
+        }
+      ]
+    }
+  ]
+}

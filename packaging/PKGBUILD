@@ -1,7 +1,7 @@
 # Construction locale : ce manifeste ne prétend pas être publié sur l'AUR.
 pkgname=omnishell-studio
 # La version est alignée sur Cargo, package.json et la configuration Tauri.
-pkgver=0.1.0
+pkgver=1.0.0rc1
 # Incrémenter cette valeur quand seul le packaging change.
 pkgrel=1
 # La description est affichée par pacman avant l'installation.
@@ -9,7 +9,7 @@ pkgdesc='Atelier local de commandes, infrastructure, réseau, partage LAN et SQL
 # Les deux architectures doivent être construites sur leurs systèmes respectifs.
 arch=('x86_64' 'aarch64')
 # L'URL désigne le projet et ne représente pas un dépôt APT ou AUR actif.
-url='https://github.com/xhackerip/omnishell-studio'
+url='https://github.com/HACKER2025998/omniShellStudio'
 # Le code propre au projet est distribué sous MIT.
 license=('MIT')
 # Les bibliothèques WebView sont fournies par le système.
@@ -28,6 +28,8 @@ build() {
   npm ci
   # Le binaire desktop est construit sans essayer de fabriquer un paquet Debian sur Arch.
   npm run build
+  # Le contexte Tauri attend un sidecar prêt pour la plateforme native.
+  npm run build:daemon
   # Cargo utilise le lockfile suivi dans le dépôt.
   cargo build --locked --release --features desktop --manifest-path src-tauri/Cargo.toml
 }
@@ -37,6 +39,8 @@ package() {
   cd "$srcdir/omnishell-studio"
   # Le nom CLI attendu par les hooks reste omnishell.
   install -Dm755 src-tauri/target/release/omnishell "$pkgdir/usr/bin/omnishell"
+  # Le service résident est distinct pour éviter de charger WebKit sans fenêtre.
+  install -Dm755 src-tauri/target/release/omnishell-daemon "$pkgdir/usr/bin/omnishell-daemon"
   # Le lanceur système pointe vers ce même exécutable.
   install -Dm644 packaging/omnishell.desktop "$pkgdir/usr/share/applications/omnishell.desktop"
   # L'icône reste une ressource locale de la distribution.

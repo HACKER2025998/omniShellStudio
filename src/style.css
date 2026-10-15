@@ -1244,3 +1244,219 @@ footer span {
     break-inside: avoid;
   }
 }
+/* Les graphes éditables utilisent les mêmes contrastes clairs que les panneaux du bureau. */
+.interactive-graph {
+  height: 500px;
+  min-width: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+.graph-section {
+  min-width: 0;
+  margin-bottom: 24px;
+}
+.graph-section > small {
+  display: block;
+  color: #475569;
+  margin-top: 10px;
+}
+.graph-node-body {
+  padding: 15px;
+  text-align: left;
+  color: #0f172a;
+}
+.graph-node-body h3 {
+  color: #1d4ed8;
+}
+.graph-node-body > div {
+  font-size: 10px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.graph-entity {
+  border: 0;
+  box-shadow: none;
+  min-width: 0;
+  width: 100%;
+  text-align: left;
+}
+.graph-entity > div {
+  display: block;
+  font-size: 10px;
+  white-space: pre-wrap;
+}
+.graph-section .entity h3 {
+  font-size: 12px;
+}
+.inline-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.vault-filters {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.vault-filters input[type="date"] {
+  font-size: 10px;
+  padding: 6px;
+}
+.argument-explanation {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 10px 0;
+}
+.argument-explanation code {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.argument-explanation p {
+  font-size: 10px;
+  color: #475569;
+  line-height: 1.7;
+  margin: 7px 0;
+}
+.sql-layout {
+  grid-template-columns: minmax(260px, 0.8fr) minmax(400px, 1.2fr);
+}
+/* Les textes secondaires atteignent un contraste de lecture renforcé sur les surfaces claires. */
+.breadcrumb,
+.list-label,
+.metadata,
+.metadata span:first-child,
+.command-title > small,
+.category small,
+.metrics small,
+.sidebar-footer,
+.workspace small,
+footer,
+.muted,
+.help,
+.page-heading p:last-child {
+  color: #475569;
+}
+.search {
+  color: #475569;
+}
+.search input::placeholder {
+  color: #475569;
+}
+.category small {
+  color: #475569;
+}
+.react-flow__edge-text {
+  fill: #0f172a;
+}
+.react-flow__controls button {
+  color: #0f172a;
+  background: #fff;
+}
+.react-flow__node {
+  color: #0f172a;
+}
+.nav.active,
+.category.chosen,
+.overline,
+.graph-node-body h3,
+.entity h3 {
+  color: #1e40af;
+}
+.primary {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+.status-dot {
+  background: #047857;
+}
+.badge.sudo {
+  color: #854d0e;
+}
+.badge.safe {
+  color: #065f46;
+}
+.dot {
+  background: #475569;
+}
+@media (max-width: 1100px) {
+  .sql-layout {
+    grid-template-columns: 1fr;
+  }
+  .interactive-graph {
+    height: 420px;
+  }
+}
+/* Les petites légendes exigent elles aussi un contraste élevé : aucune information ne dépend d'un gris pâle. */
+.primary {
+  background: #1e40af;
+  border-color: #1e40af;
+}
+.primary:hover {
+  background: #1e3a8a;
+}
+.brand small {
+  color: #1e40af;
+}
+.tip p,
+.tip strong {
+  color: #334155;
+}
+.tip kbd,
+.empty,
+.breadcrumb > span,
+.inspector-title,
+.inspector > p,
+.inspector dt,
+.modal p,
+.network-root small,
+.network-node small,
+.network-node > span:not(.status-dot),
+.entity code,
+.entity small {
+  color: #475569;
+}
+.local-card > span {
+  color: #475569;
+}
+.star.favorite {
+  color: #92400e;
+}
+.inspector-icon,
+.heading-icon {
+  color: #1e40af;
+}
+.nav.active {
+  color: #1e40af;
+}
+.badge {
+  color: #334155;
+}
+/* Sur la porcelaine latérale, un gris plus soutenu maintient le seuil AAA des petites légendes. */
+.sidebar,
+.sidebar button,
+.workspace small,
+.eyebrow,
+.category span,
+.category small,
+.metrics span,
+.tab,
+.pagination,
+.badge.sudo,
+.local-card,
+.sidebar-footer,
+.sidebar-footer small {
+  color: #334155;
+}
+.sidebar .nav.active,
+.sidebar .category.chosen {
+  color: #1e3a8a;
+}
+.badge.sudo {
+  color: #713f12;
+}
+.metrics small {
+  color: #334155;
+}

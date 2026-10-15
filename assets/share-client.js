@@ -427,11 +427,17 @@
 
   // src/share-client.ts
   var token = localStorage.getItem("omnishell-peer") || "";
-  var element = (selector) => document.querySelector(selector);
+  var element = (selector) => (
+    // @ligne Effectue l’opération indiquée et transmet son résultat ou son erreur dans le parcours de la session navigateur et des transferts repris.
+    document.querySelector(selector)
+  );
   async function request(path, options = {}) {
     const response = await fetch(path, {
+      // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
       ...options,
+      // @ligne Renseigne le champ « headers » de la structure utilisée ici de la session navigateur et des transferts repris.
       headers: { Authorization: "Bearer " + token, ...options.headers }
+      // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
     });
     if (!response.ok) throw new Error(await response.text());
     return response;
@@ -453,14 +459,19 @@
         link.href = "/api/files/" + file.id;
         link.download = file.name;
         row.append(
+          // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
           document.createTextNode(file.name + " \xB7 " + file.size + " octets "),
+          // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
           link
+          // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
         );
         list.append(row);
       }
       element("#upload-area").hidden = !data.upload;
       status(
+        // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
         data.upload ? "Vous pouvez contribuer \xE0 la salle." : "Lecture seule \xB7 Votre h\xF4te contr\xF4le les permissions."
+        // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
       );
     } catch (e) {
       status(String(e));
@@ -479,13 +490,21 @@
   element("#join").onsubmit = async (event) => {
     event.preventDefault();
     try {
-      const data = await (await request("/api/join", {
+      const data = await // @ligne Effectue l’opération indiquée et transmet son résultat ou son erreur dans le parcours de la session navigateur et des transferts repris.
+      (await request("/api/join", {
+        // @ligne Renseigne le champ « method » de la structure utilisée ici de la session navigateur et des transferts repris.
         method: "POST",
+        // @ligne Renseigne le champ « headers » de la structure utilisée ici de la session navigateur et des transferts repris.
         headers: { "Content-Type": "application/json" },
+        // @ligne Renseigne le champ « body » de la structure utilisée ici de la session navigateur et des transferts repris.
         body: JSON.stringify({
+          // @ligne Renseigne le champ « name » de la structure utilisée ici de la session navigateur et des transferts repris.
           name: element("#name").value,
+          // @ligne Renseigne le champ « pin » de la structure utilisée ici de la session navigateur et des transferts repris.
           pin: element("#pin").value
+          // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
         })
+        // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
       })).json();
       token = data.token;
       localStorage.setItem("omnishell-peer", token);
@@ -501,7 +520,27 @@
     if (!files) return;
     for (const file of files) {
       try {
-        const identity = [file.name, file.size, file.lastModified].join(":");
+        const signature = Array.from(
+          // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          blake3(
+            // @ligne Effectue l’opération indiquée et transmet son résultat ou son erreur dans le parcours de la session navigateur et des transferts repris.
+            new Uint8Array(await file.slice(0, 4 * 1024 * 1024).arrayBuffer())
+            // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
+          ),
+          // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          (b) => b.toString(16).padStart(2, "0")
+        ).join("");
+        const identity = [
+          // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          file.name,
+          // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          file.size,
+          // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          file.lastModified,
+          // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          signature
+          // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+        ].join(":");
         let id = localStorage.getItem("transfer:" + identity);
         if (!id) {
           id = crypto.randomUUID();
@@ -509,30 +548,69 @@
         }
         const state = await (await request("/api/upload/" + id)).json();
         let offset = state.offset;
-        while (offset < file.size) {
+        if (offset > file.size)
+          throw new Error("Le transfert distant ne correspond pas \xE0 ce fichier.");
+        let started = false;
+        while (offset < file.size || !started && file.size === 0) {
+          started = true;
           const bytes = new Uint8Array(
+            // @ligne Effectue l’opération indiquée et transmet son résultat ou son erreur dans le parcours de la session navigateur et des transferts repris.
             await file.slice(offset, offset + 4 * 1024 * 1024).arrayBuffer()
+            // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
           );
           const digest = Array.from(
             blake3(bytes),
-            (b) => b.toString(16).padStart(2, "0")
+            (b) => (
+              // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+              b.toString(16).padStart(2, "0")
+            )
+            // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
           ).join("");
-          const result = await (await request("/api/upload/" + id, {
+          const result = await // @ligne Effectue l’opération indiquée et transmet son résultat ou son erreur dans le parcours de la session navigateur et des transferts repris.
+          (await request("/api/upload/" + id, {
+            // @ligne Renseigne le champ « method » de la structure utilisée ici de la session navigateur et des transferts repris.
             method: "PUT",
-            headers: { "X-Offset": String(offset), "X-Blake3": digest },
+            // @ligne Renseigne le champ « headers » de la structure utilisée ici de la session navigateur et des transferts repris.
+            headers: {
+              // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+              "X-Offset": String(offset),
+              // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+              "X-Blake3": digest,
+              // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+              "X-Total-Size": String(file.size),
+              // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+              "X-File-Name": encodeURIComponent(file.name)
+              // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
+            },
+            // @ligne Renseigne le champ « body » de la structure utilisée ici de la session navigateur et des transferts repris.
             body: bytes
+            // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
           })).json();
           offset = result.offset;
           status(
-            file.name + " \xB7 " + Math.round(offset / file.size * 100) + " %"
+            // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+            file.name + // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+            " \xB7 " + // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+            (file.size ? Math.round(offset / file.size * 100) : 100) + // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+            " %"
+            // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
           );
         }
         status(
-          file.name + " re\xE7u. Le ma\xEEtre retrouvera le transfert " + id + " dans son dossier de r\xE9ception."
+          // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          file.name + // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          " re\xE7u et publi\xE9 dans la salle. Identifiant " + // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          id + // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          " dans son dossier de r\xE9ception."
+          // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
         );
       } catch (e) {
         status(
-          "Transfert interrompu : " + String(e) + ". S\xE9lectionnez \xE0 nouveau le fichier pour reprendre."
+          // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          "Transfert interrompu : " + // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          String(e) + // @ligne Complète l’expression en cours sans changer le contexte parent. Cette étape participe à la mise en œuvre de la session navigateur et des transferts repris.
+          ". S\xE9lectionnez \xE0 nouveau le fichier pour reprendre."
+          // @ligne Termine cette construction et revient au contexte parent de la session navigateur et des transferts repris.
         );
         break;
       }
@@ -543,4 +621,13 @@
     refresh();
     connect();
   }
+  var fragment = new URLSearchParams(location.hash.slice(1));
+  var sharedPin = fragment.get("pin");
+  if (sharedPin && /^\d{6}$/.test(sharedPin)) {
+    element("#pin").value = sharedPin;
+    history.replaceState(null, "", location.pathname);
+  }
+  setInterval(() => {
+    if (token && !document.hidden) refresh();
+  }, 15e3);
 })();

@@ -1,0 +1,10 @@
+{
+  "corpus": 100000,
+  "database_bytes": 54054912,
+  "import_ms": 4728,
+  "requests": 200,
+  "scope": "ouverture SQLite, migration idempotente, filtre FTS5, comptage et sérialisation JSON ; rendu UI exclu",
+  "search_median_ms": 1.367741,
+  "search_p95_ms": 1.6067690000000001,
+  "search_p99_ms": 1.729482
+}

@@ -1,0 +1,14 @@
+{
+  "platform": "Linux",
+  "scope": "Processus parent et descendants, profil synthétique de 100 commandes, huit secondes ; RSS et PSS ne sont pas interchangeables.",
+  "daemon": {
+    "rss_kib": 7996,
+    "pss_kib": 5378,
+    "processes": 1
+  },
+  "desktop": {
+    "rss_kib": 691396,
+    "pss_kib": 314450,
+    "processes": 3
+  }
+}

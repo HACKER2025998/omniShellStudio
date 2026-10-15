@@ -7,3 +7,10 @@ src-tauri/target/
 test-results/
 playwright-report/
 *.tsbuildinfo
+# Les sidecars et archives d'installation sont reconstruits depuis les sources.
+src-tauri/binaries/
+release/
+
+# Les contrôles de syntaxe Python ne font pas partie des sources distribuées.
+__pycache__/
+*.pyc

@@ -17,6 +17,8 @@ function global:prompt {
             $info.RedirectStandardError = $true
             $info.CreateNoWindow = $true
             $info.EnvironmentVariables['OMNISHELL_SHELL'] = 'pwsh'
+            # Get-History expose les bornes réelles de la commande, sans deviner un code de sortie.
+            $info.EnvironmentVariables['OMNISHELL_DURATION'] = [string][long]($lastEntry.EndExecutionTime - $lastEntry.StartExecutionTime).TotalMilliseconds
             # Les anciennes versions PowerShell ne fournissent pas un exit_code fiable pour les cmdlets.
             $process = [System.Diagnostics.Process]::Start($info)
             $process.StandardInput.Write($lastEntry.CommandLine)

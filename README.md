@@ -4,9 +4,9 @@ Un atelier desktop pour retrouver ses commandes, consulter son infrastructure sa
 
 **Auteur du projet : Kossi Bernard Etonam ADJOGBLE — xhackerip.**
 
-Application locale : **Rust, Tauri v2, React 19, TypeScript, SQLite FTS5**. Interface claire Daylight. Les cinq espaces de travail partagent un stockage utilisateur et n'utilisent aucun service cloud.
+Application locale : **Rust, Tauri v2, React 19, TypeScript, SQLite FTS5**. Interface claire Daylight. Les cinq espaces de travail partagent un stockage utilisateur. Leur fonctionnement local ne dépend d’aucun cloud ; une interrogation WAN externe est disponible uniquement à la demande explicite de l’utilisateur.
 
-Cette livraison porte le numéro **0.1.0**. Elle contient du code fonctionnel, des tests et un packaging Linux. Elle ne doit pas être présentée comme une certification de toutes les exigences industrielles de la version 1.0 du CDC. La [matrice de conformité](docs/EXIGENCES.md) précise les fonctionnalités réalisées, les variantes retenues et les points encore absents.
+Cette livraison porte le numéro **1.0.0-rc.1**. Elle complète les fonctions des cinq espaces avec analyse syntaxique multi-shell, événements Docker, découverte réseau multi-protocoles, dossiers compressés, reprise des salles, canevas interactifs et connexions SQL natives. Les exigences industrielles restent évaluées sur des mesures réelles : le budget mémoire du bureau n’est pas atteint sur la machine de recette. La [matrice de conformité](docs/EXIGENCES.md) précise les fonctionnalités réalisées, les variantes retenues et les points encore absents.
 
 ![Interface du coffre — données de fixture utilisées uniquement par le test UI](docs/screenshots/coffre.png)
 
@@ -24,9 +24,9 @@ Cette livraison porte le numéro **0.1.0**. Elle contient du code fonctionnel, d
 | --- | --- | --- |
 | Command Vault | Rechercher, filtrer par catégorie, marquer un favori, copier, paramétrer une IP, supprimer, exporter la page | Historiques importés et hooks optionnels |
 | Docker & Infra | Consulter les conteneurs capturés, leurs ports, volumes, environnement masqué et logs ; copier les actions | CLI Docker locale, snapshots SQLite |
-| NetMap Studio | Sonder dix ports sur un réseau IPv4 privé /24 et exporter les observations | Connexions TCP locales explicites |
-| ClassShare LAN | Partager des fichiers par HTTPS, PIN et QR ; attribuer ou retirer les droits d'envoi | Fichiers choisis par l'hôte |
-| DBA & Merise | Lire du DDL sans l'exécuter, afficher tables et FK, exporter MLD, UML et MCD assisté | Script SQL ou introspection SQLite par API |
+| NetMap Studio | Observer TCP, tables système et mDNS ; essayer ARP/LLDP/CDP et SNMP ; déplacer et exporter le graphe | Preuves locales et permissions explicites |
+| ClassShare LAN | Partager fichiers/dossiers, gérer les droits, reprendre les transferts et restaurer une salle | HTTPS, archives tar.zst, SQLite et jetons hachés |
+| DBA & Merise | Lire du DDL, afficher et déplacer les tables/FK, exporter MLD/UML/MCD | SQL collé ou introspection SQLite/PostgreSQL/MySQL |
 
 Aucune commande du coffre n'est exécutée par le logiciel. Une copie contenant `[REDACTED]` doit être complétée par son utilisateur. Les actions Docker et réseau sont également des commandes à copier : elles ne déclenchent pas silencieusement une opération administrative.
 
@@ -61,6 +61,8 @@ npm run tauri -- dev
 ```
 
 Tauri lance Vite puis ouvre la fenêtre native. Au premier lancement, le bureau tente l'import des historiques disponibles. Un fichier absent est normal ; un fichier illisible peut être diagnostiqué avec le bouton d'import ou la CLI.
+
+`npm run build:daemon` compile le service résident sans WebView et prépare son sidecar pour la plateforme. Le lancement Tauri effectue cette préparation automatiquement.
 
 `npm run dev` ouvre uniquement l'interface de développement dans un navigateur. Ce mode ne possède pas l'IPC Tauri : un message explique qu'il faut ouvrir la version desktop. Aucune fausse commande n'est injectée dans le produit pour donner l'impression que le moteur fonctionne.
 
@@ -117,7 +119,7 @@ Les fichiers sont lus sans être modifiés. Les lignes comportant des octets irr
 
 ### Déduplication et compteurs
 
-La version masquée de la commande est hachée avec BLAKE3. Une même commande capturée par un hook incrémente le compteur atomiquement. La forme `sudo docker ps` et la forme `docker ps` restent distinctes pour préserver leur contexte de privilège.
+La version masquée de la commande est hachée avec BLAKE3. Une même commande capturée par un hook incrémente le compteur atomiquement. La forme `sudo docker ps` et la forme `docker ps` restent distinctes pour préserver leur contexte de privilège. Chaque capture temps réel possède également un identifiant d’événement : la perte d’un accusé de réception du daemon ne provoque pas un second comptage dans le fallback.
 
 Les imports manuels privilégient l'idempotence : une commande déjà connue n'est pas recomptée à chaque lecture du fichier. Le compteur d'une rétro-ingestion représente donc un **minimum observé**, et ne constitue pas un audit exhaustif de la fréquence historique. Un digest par fichier évite de relire un contenu inchangé. Les hooks apportent les occurrences futures.
 
@@ -127,9 +129,9 @@ La recherche retourne au maximum 100 lignes par page. Le total correspond au fil
 
 Le moteur retire les enveloppes usuelles `sudo`, `doas`, `pkexec`, `env`, `nohup`, `time` et `watch`, puis classe le binaire métier. `su -c` est analysé récursivement. `time` ne crée pas un badge de privilège, contrairement à une formulation ambiguë du document client.
 
-Il s'agit d'une **analyse lexicale avec gestion des guillemets**, pas d'un interpréteur AST complet de Bash, Zsh, Fish et PowerShell. Les pipelines complexes, substitutions, fonctions, alias non résolus et options rares peuvent demander une vérification humaine. Le texte exact masqué reste consultable même si sa classification est approximative.
+La normalisation lexicale est complétée par de vrais **AST Tree-sitter Bash, Fish et PowerShell** dans l’inspecteur. Zsh utilise la grammaire Bash pour son sous-ensemble compatible ; ses extensions peuvent apparaître en syntaxe partiellement reconnue. Pipelines, substitutions et blocs sont structurés sans être évalués. Les alias et fonctions définis dans votre session ne sont pas résolus à distance : aucune analyse statique ne remplace leur environnement d’exécution.
 
-Les familles disponibles sont conteneurs, réseau, système, fichiers, Git, bases de données, IA/Python, développement et autres. Le CDC annonce douze catégories mais n'en détaille que huit : la livraison conserve les huit familles fournies et une catégorie de repli, sans inventer une taxonomie présentée comme officielle.
+Douze familles sont disponibles : conteneurs, réseau, système, fichiers, Git, bases de données, IA/Python, développement, stockage/sauvegardes, accès distants, observabilité et autres. Les trois familles ajoutées explicitent la taxonomie incomplète du CDC. Les filtres d’élévation et de date se combinent à la catégorie, la recherche et les favoris.
 
 ### Capture des nouvelles commandes
 
@@ -140,6 +142,7 @@ Placez d'abord un binaire compilé dans votre PATH. Exemple Linux/macOS pour le 
 ```sh
 mkdir -p "$HOME/.local/bin"
 install -m755 src-tauri/target/release/omnishell "$HOME/.local/bin/omnishell"
+install -m755 src-tauri/target/release/omnishell-daemon "$HOME/.local/bin/omnishell-daemon"
 ```
 
 Ajoutez ensuite **une seule** ligne adaptée à votre shell, en remplaçant le chemin par celui du dépôt :
@@ -163,21 +166,21 @@ Pour PowerShell, dans votre profil :
 
 Ouvrez un nouveau terminal puis exécutez une commande sans secret, par exemple `git status`. Rechargez la recherche du coffre. Bash utilise son historique interactif ; les commandes exclues de cet historique restent exclues. Zsh fournit le texte via `preexec`, Fish via `fish_postexec`, PowerShell via `Get-History` au prochain prompt.
 
-Les commandes passent par l'entrée standard du binaire, jamais dans ses arguments de lancement. Les hooks Unix lancent la capture en arrière-plan. Ils renseignent le code de sortie quand il est connu. La durée n'est pas inventée ; le terminal provient de `TERM_PROGRAM` ou `TERM`, et n'est pas garanti comme identification exacte de l'émulateur. Les shell hooks n'ont pas encore une mesure certifiée inférieure à 1,5 ms.
+Les commandes passent par l'entrée standard du binaire, jamais dans ses arguments de lancement. Les hooks Unix lancent la capture en arrière-plan. Ils renseignent le code de sortie quand il est connu. Zsh, Fish et PowerShell fournissent une durée mesurée lorsque disponible ; Bash conserve une durée inconnue. Le terminal provient de `TERM_PROGRAM`, d’une recherche dans l’ascendance Linux ou de `TERM` en repli. Les shell hooks n'ont pas encore une mesure certifiée inférieure à 1,5 ms.
 
 Pour désinstaller un hook, retirez sa ligne `source` ou son chargement PowerShell, puis ouvrez un nouveau terminal. Aucun service système ni modification de l'historique source n'a besoin d'être annulé.
 
 ### Daemon utilisateur optionnel
 
-Sur Linux/macOS :
+Sur Linux/macOS/Windows, lancez le service dédié installé avec le bureau :
 
 ```sh
-omnishell daemon
+omnishell-daemon
 ```
 
-Le daemon crée un socket Unix dans le répertoire privé de données, avec permissions 0600 et répertoire 0700. Il importe les historiques et tente une synchronisation Docker toutes les 30 secondes. Il ne lance aucun scan réseau ni partage LAN automatiquement. `Ctrl+C` l'arrête.
+Le daemon crée un socket Unix dans le répertoire privé de données, avec permissions 0600 et répertoire 0700. Il importe les historiques toutes les 30 secondes et suit le flux d’événements des conteneurs Docker avec reconnexion automatique. Il ne lance aucun scan réseau ni partage LAN automatiquement. `Ctrl+C` l'arrête.
 
-Un hook essaie le socket ; si le daemon est absent, il écrit directement dans SQLite. Cette solution garde la capture utilisable sans service résident. Sous Windows, la capture directe est disponible ; le daemon Named Pipe reste à réaliser.
+Un hook essaie le socket ; si le daemon est absent, il écrit directement dans SQLite. Cette solution garde la capture utilisable sans service résident. Sous Windows, le daemon utilise un Named Pipe propre à l’installation, refuse les clients distants et vérifie une clé aléatoire conservée dans le profil utilisateur. La capture directe reste le repli si le service est absent.
 
 Le fichier [packaging/omnishell.service](packaging/omnishell.service) est un exemple de service systemd **utilisateur**, à adapter au chemin du binaire. Son activation n'est pas automatique :
 
@@ -188,17 +191,17 @@ systemctl --user daemon-reload
 systemctl --user enable --now omnishell.service
 ```
 
-L'exemple suppose `~/.local/bin/omnishell`. Vérifiez son chemin avant activation. Pour annuler : `systemctl --user disable --now omnishell.service`, puis retirez ce fichier utilisateur.
+L’exemple suppose `~/.local/bin/omnishell-daemon`. Installez aussi ce binaire depuis `src-tauri/target/release/` avant d’activer le service. Vérifiez son chemin avant activation. Pour annuler : `systemctl --user disable --now omnishell.service`, puis retirez ce fichier utilisateur.
 
 ## Docker & Infra
 
 Cliquez sur **Synchroniser Docker** lorsque la CLI Docker est disponible et que votre compte peut accéder au moteur. L'application appelle `docker ps -aq --no-trunc`, puis `docker inspect` et `docker logs --tail 200`, avec un délai maximal de 15 secondes par commande externe. Elle n'invoque pas un shell intermédiaire.
 
-Chaque conteneur possède un snapshot durable : nom, image, état, ports, montages, réseaux, environnement masqué et logs récupérables. Le daemon optionnel actualise ces captures périodiquement. Les conteneurs absents lors d'une synchronisation ne sont pas automatiquement supprimés du cache ; la date de capture indique son ancienneté.
+Chaque conteneur possède un snapshot durable : nom, image, état, ports, montages, réseaux, environnement masqué et logs récupérables. Le daemon optionnel actualise ces captures à partir des événements Docker, avec une capture complète à chaque reconnexion. Les conteneurs absents lors d'une synchronisation ne sont pas automatiquement supprimés du cache ; la date de capture indique son ancienneté.
 
-Les boutons permettent de copier une commande de shell `/bin/sh`, de logs, de redémarrage ou d'inspection. Le shell `/bin/bash` n'est pas déclaré détecté automatiquement. Les recettes de sauvegarde doivent être adaptées au type de base et aux identifiants ; le coffre DBA fournit des modèles de dumps.
+Les boutons permettent de copier une commande de shell `/bin/sh`, de logs, de redémarrage ou d'inspection. Le shell `/bin/bash` n'est pas déclaré détecté automatiquement. Un bouton de sauvegarde propose pg_dump, mysqldump ou un archivage de volume selon l’image ; les identifiants et chemins inconnus restent des variables à compléter.
 
-**Commande d'origine :** Docker conserve la configuration d'un conteneur, pas nécessairement la ligne tapée il y a trois mois. OmniShell fournit une reconstruction partielle avec nom, ports, volumes et image. Elle est clairement étiquetée. Les variables d'environnement, politiques de redémarrage, healthchecks, commandes, utilisateurs et options particulières doivent être revus avant une recréation. Ne traitez pas cette ligne comme une sauvegarde complète de production. Conservez les fichiers Compose comme source de vérité.
+**Commande d'origine :** Docker conserve la configuration d'un conteneur, pas nécessairement la ligne tapée il y a trois mois. OmniShell fournit une reconstruction partielle avec nom, ports, volumes et image. Elle est clairement étiquetée. Les variables d'environnement, politiques de redémarrage, healthchecks, commandes, utilisateurs et options particulières doivent être revus avant une recréation. Ne traitez pas cette ligne comme une sauvegarde complète de production. Conservez les fichiers Compose comme source de vérité. Les fichiers indiqués dans les labels Compose sont également capturés après masquage. Si une commande `docker run --name` correspondant au nom et à l’image existe dans le coffre, elle est affichée séparément comme origine capturée candidate : cette corrélation n’est pas présentée comme une preuve de l’ID du conteneur.
 
 Si Docker est arrêté ou refusé, le cache reste lisible. Donner accès au socket Docker peut donner des privilèges élevés sur le système : l'application ne modifie pas les groupes, ne lance pas `sudo` et ne contourne pas cette permission.
 
@@ -213,13 +216,17 @@ Si Docker est arrêté ou refusé, le cache reste lisible. Donner accès au sock
 
 `probe_ms` est la durée de l'ensemble des essais d'un hôte, **pas un ping ICMP**. Une machine filtrée ou sans port ouvert peut rester invisible. Le logiciel ne conclut pas qu'elle est éteinte.
 
-Ce moteur ne reconstruit pas encore une topologie physique LLDP/CDP/SNMP, ne collecte pas l'ISP et ne contacte pas de serveur WAN. Aucun switch, fabricant ou lien physique n'est inventé à partir d'un scan TCP. Les snapshots réseau restent disponibles sans réseau. L'export graphique SVG/PNG et le canevas avec déplacement de nœuds restent des évolutions identifiées dans la matrice.
+Le moteur ajoute les routes et voisins du système et les annonces mDNS. Les options permettent un sweep ARP et une écoute LLDP/CDP sous Unix si les permissions datalink sont disponibles ; sinon le résultat conserve un avertissement et le repli non privilégié. Une communauté SNMPv2c fournie explicitement permet de lire sysDescr/sysName sur la passerelle ; elle n’est jamais persistée. Les bannières SSH et l’en-tête Server HTTP peuvent compléter les ports observés.
+
+Le canevas React Flow se déplace et se zoome ; Dagre propose la disposition initiale. Les positions sont mémorisées par graphe. Les liens logiques pointillés ne prétendent pas représenter un câble. Les noms/MAC/ports annoncés par LLDP/CDP restent des preuves distinctes. Le bouton d’import OUI accepte un CSV IEEE comportant Assignment et Organization Name ; cette base locale facultative enrichit les MAC lors des prochains scans, sans inventer un constructeur inconnu. Les exports JSON, SVG vectoriel, PNG et impression PDF sont disponibles. Sélectionner un nœud ouvre ses détails et permet de copier SSH, Nmap ou Ping ; ces commandes générées rejoignent le coffre.
+
+Le panneau WAN est séparé. Son bouton contacte volontairement `https://ipapi.co/json/` et enregistre l’IP publique, le FAI et l’ASN dans un cache daté. Ce service externe voit l’IP de la requête et peut être indisponible. Aucun appel WAN n’est effectué lors d’un scan local, au lancement ou en arrière-plan.
 
 ## ClassShare LAN
 
 ### Ouvrir une salle
 
-Dans ClassShare, saisissez un chemin absolu par fichier, choisissez une adresse IPv4 LAN de votre machine, puis ouvrez la salle. Pour partager un dossier, archivez-le d'abord : cette livraison refuse explicitement un dossier au lieu de simuler une compression streaming non réalisée.
+Dans ClassShare, choisissez des fichiers ou dossiers avec le dialogue natif, ou saisissez un chemin absolu par ligne. Sélectionnez votre interface LAN puis ouvrez la salle. Chaque dossier est préparé en `.tar.zst` par un flux de compression en mémoire constante, sans suivre les liens symboliques internes ni inclure des fichiers spéciaux. La préparation sur disque avant exposition garantit que HTTP Range pourra reprendre exactement la même archive. Le parcours est limité à 64 niveaux et 100 000 entrées.
 
 Le serveur écoute uniquement sur l'adresse sélectionnée et sur un port dynamique. L'interface affiche :
 
@@ -229,7 +236,7 @@ Le serveur écoute uniquement sur l'adresse sélectionnée et sur un port dynami
 - le chemin du certificat local et son empreinte BLAKE3 du fichier PEM ;
 - le dossier local de réception des contributions.
 
-Le PIN sert à rejoindre la salle. Il ne peut pas encoder toute adresse IPv4, tout port et un authentificateur robuste dans seulement un million de possibilités. Le participant a donc besoin du lien, du QR ou d'une découverte locale. La découverte mDNS est annoncée par l'hôte ; un navigateur classique ne parcourt pas automatiquement mDNS.
+Le PIN sert à rejoindre la salle. Il ne peut pas encoder toute adresse IPv4, tout port et un authentificateur robuste dans seulement un million de possibilités. Le participant a donc besoin du lien, du QR ou d'une découverte locale. La découverte mDNS est annoncée par l’hôte et parcourue dans le panneau « Rejoindre une salle ». Choisissez un résultat ou renseignez un lien direct, puis éventuellement le code à six chiffres. Le lien s’ouvre dans le navigateur système pour valider le certificat et terminer l’admission. Le code prérempli est transmis par fragment navigateur, pas par query string HTTP ; le client efface ensuite le fragment.
 
 ### Faire confiance au certificat
 
@@ -247,15 +254,15 @@ Un participant arrive en lecture seule. Le panneau maître lui accorde éventuel
 
 Les téléchargements sont servis en streaming et prennent en charge HTTP Range. Le navigateur utilise un cookie `HttpOnly`, `Secure`, `SameSite=Strict` pour son téléchargement natif. Le jeton conservé dans localStorage sert aux appels de l'interface et à l'authentification initiale du WebSocket. Ne partagez pas ces jetons.
 
-Pour une contribution, sélectionnez un ou plusieurs fichiers. Chaque bloc fait au maximum **4 Mio**, et son empreinte BLAKE3 est contrôlée avant écriture. Le serveur confirme le décalage durable. Après une coupure, choisissez à nouveau le même fichier : le client retrouve l'identifiant du transfert et interroge la taille reçue. Cette reprise exige le même navigateur, la même origine de salle, une session encore valide et le même fichier. Elle ne prétend pas survivre à un arrêt de l'hôte ou à l'effacement du stockage du navigateur.
+Pour une contribution, sélectionnez un ou plusieurs fichiers. Chaque bloc fait au maximum **4 Mio**, et son empreinte BLAKE3 est contrôlée avant écriture. Le serveur confirme le décalage durable. Après une coupure, choisissez à nouveau le même fichier : le client retrouve l'identifiant du transfert et interroge la taille reçue. Cette reprise exige le même navigateur, la même origine de salle, une session encore valide et le même fichier. Elle survit aussi à un arrêt de l’hôte si celui-ci restaure la salle depuis le panneau : le port, la date d’expiration, les permissions et les empreintes de jetons sont conservés dans SQLite. La salle expire après 24 heures. Si le port est devenu occupé, la restauration échoue explicitement plutôt que de changer silencieusement d’origine. Effacer le stockage du navigateur supprime ses identifiants de reprise.
 
-Les fichiers reçus sont nommés `<id-pair>-<id-transfert>.upload` dans le dossier affiché. Le nom original n'est pas utilisé comme chemin et n'est pas restauré automatiquement. Examinez les contributions avant de les renommer ou de les exécuter. Elles ne sont pas republiées automatiquement aux autres participants.
+Les fichiers reçus sont nommés `<id-pair>-<id-transfert>.upload` dans le dossier affiché. Le nom original n’est jamais utilisé comme chemin ; il est conservé séparément pour la présentation et le téléchargement. Un fichier terminé, y compris un fichier vide, rejoint la liste de la salle avec son nom et une notification WebSocket. Les fichiers incomplets ne sont pas publiés. Examinez les contributions avant de les exécuter. Le panneau indique les octets effectivement servis et reçus par participant.
 
-Limites de réception : **2 Gio par transfert**, **10 Gio par salle**, et **64 Mio de réserve disque**. Les blocs sont sérialisés pour interdire deux écritures concurrentes au même décalage. Une erreur de disque est signalée. Les essais de PIN sont limités globalement à trente par minute ; une saturation peut donc temporairement gêner tous les nouveaux arrivants.
+Limites initiales de réception : **2 Gio par transfert**, **10 Gio par salle**, et **64 Mio de réserve disque**. Les quotas se configurent avant l’ouverture ; le serveur valide leur cohérence et impose au moins 16 Mio de réserve. Les blocs sont sérialisés pour interdire deux écritures concurrentes au même décalage. Une erreur de disque est signalée. Les essais de PIN sont limités globalement à trente par minute ; une saturation peut donc temporairement gêner tous les nouveaux arrivants.
 
 ### Fermer la salle
 
-Le bouton de fermeture arrête l'écoute et les connexions du serveur. Les fichiers reçus restent sur le disque pour l'hôte ; leur suppression relève de la politique de conservation de la salle. Les fichiers source ne sont jamais déplacés ni effacés. Quitter le processus hôte ferme aussi la salle.
+Le bouton de fermeture arrête l'écoute et les connexions du serveur. Les fichiers reçus restent sur le disque pour l'hôte ; leur suppression relève de la politique de conservation de la salle. Les fichiers source ne sont jamais déplacés ni effacés. Quitter le processus hôte arrête l’écoute mais conserve une salle restaurable jusqu’à expiration. Le bouton « Fermer la salle » invalide explicitement sa restauration. Les jetons des pairs expulsés ne redeviennent jamais valides lors d’une reprise.
 
 La CLI permet également un partage simple :
 
@@ -269,9 +276,9 @@ Elle affiche un objet JSON avec URL, PIN et certificat, puis reste active jusqu'
 
 Collez un DDL avec une ou plusieurs instructions `CREATE TABLE`, puis choisissez **Analyser**. Le parseur SQL conserve les colonnes, types et contraintes, y compris les virgules d'un `DECIMAL(10,2)` et les clés étrangères composites. Il n'exécute pas les instructions du script.
 
-Les tables apparaissent dans un canevas clair. Les associations sont extraites des contraintes `REFERENCES` et `FOREIGN KEY`. Une FK obligatoire produit une participation source `1,1` ; une FK nullable donne `0,1`. Une clé unique couvrant exactement la FK limite la participation inverse à `0,1`, sinon `0,n`. Le DDL seul ne permet pas de connaître toutes les règles métier : le MCD proposé doit être validé avec son auteur.
+Les tables apparaissent dans un canevas clair déplaçable, avec liens et cardinalités. Les positions se conservent par modèle ; SVG/PNG et réorganisation automatique sont disponibles. Les associations sont extraites des contraintes `REFERENCES` et `FOREIGN KEY`. Une FK obligatoire produit une participation source `1,1` ; une FK nullable donne `0,1`. Une clé unique couvrant exactement la FK limite la participation inverse à `0,1`, sinon `0,n`. Le DDL seul ne permet pas de connaître toutes les règles métier : le MCD proposé doit être validé avec son auteur.
 
-Les exports comprennent : JSON du modèle, MLD textuel, diagramme UML Mermaid et MCD assisté Mermaid. Les types SQL exacts restent dans le JSON et le canevas ; la représentation UML simplifie les attributs en chaînes. Les noms d'exports graphiques sont nettoyés pour éviter une injection de syntaxe Mermaid. Le rendu Mermaid n'est pas chargé depuis un CDN : utilisez un moteur Mermaid local pour rendre les `.mmd`.
+Les exports comprennent : JSON du modèle, MLD textuel, diagramme UML Mermaid et MCD assisté Mermaid. Les types SQL exacts restent dans le JSON et le canevas ; la représentation UML conserve le nom du type SQL de base, sans sa paramétrisation de longueur. Les noms d'exports graphiques sont nettoyés pour éviter une injection de syntaxe Mermaid. Le rendu Mermaid n'est pas chargé depuis un CDN : utilisez un moteur Mermaid local pour rendre les `.mmd`.
 
 **Enregistrer** conserve le nom du modèle et son DDL dans SQLite ; le sélecteur permet de le reprendre. Les scripts sont limités à 1 Mio. Le dialecte générique couvre les cas courants ; les extensions propriétaires Oracle/PostgreSQL/MySQL peuvent demander une adaptation.
 
@@ -281,7 +288,7 @@ L'API locale propose aussi l'introspection SQLite en lecture seule :
 printf '%s' '{"path":"/chemin/base.sqlite3"}' | omnishell rpc sql_sqlite
 ```
 
-Pour PostgreSQL et MySQL, exportez le schéma avec leurs outils habituels puis collez le DDL. Une connexion directe à ces moteurs avec gestion des identifiants n'est pas encore intégrée. Le dictionnaire de commandes contient des templates de dump et restauration, à compléter sans mettre de mot de passe en clair dans la ligne de commande.
+Le panneau « Lire le schéma d’une base existante » ouvre SQLite avec un dialogue natif ou se connecte directement à PostgreSQL/MySQL/MariaDB. Les pilotes SQLx lisent les catalogues et contraintes, avec un délai global de 20 secondes et une limite de 500 tables. PostgreSQL utilise une transaction en lecture seule ; MySQL exécute uniquement des lectures de catalogue et SHOW CREATE TABLE. L’URL et ses identifiants restent transitoires puis sont effacés du formulaire ; seuls le DDL et le modèle peuvent être enregistrés. Utilisez un compte à privilèges limités et la politique TLS de votre installation. Le dictionnaire de commandes contient des templates de dump et restauration, à compléter sans mettre de mot de passe en clair dans la ligne de commande.
 
 ## Où sont les données ?
 
@@ -360,6 +367,7 @@ Les erreurs vont sur stderr avec un code de sortie non nul. Les résultats sont 
 ```text
 src/
   main.tsx                 Interface et parcours des cinq modules
+  components/              Canevas, inspecteur AST, connexions et outils LAN
   api.ts                   Types, IPC Tauri et exports locaux
   style.css                Design Daylight, accessibilité et impression
   share-client.html        Page autonome servie aux participants
@@ -373,7 +381,12 @@ src-tauri/
   src/classifier.rs        Masquage et analyse lexicale
   src/db.rs                SQLite, FTS, transactions et snapshots
   src/history.rs           Formats Bash, Zsh, Fish et PowerShell
-  src/daemon.rs            Service utilisateur Unix facultatif
+  src/daemon.rs            Sockets Unix et Named Pipes Windows
+  src/daemon_main.rs       Binaire résident sans WebView
+  src/shell_ast.rs         Arbres syntaxiques des shells
+  src/archives.rs          Dossiers tar.zst bornés
+  src/database_connections.rs  Catalogues PostgreSQL/MySQL
+  src/network_protocols.rs Protocoles et preuves réseau
   src/docker.rs            Capture Docker avec timeouts
   src/netmap.rs            Sondes TCP limitées
   src/share.rs             HTTPS, RBAC, Range, WebSocket et blocs BLAKE3
@@ -398,7 +411,7 @@ packaging/                 Lanceur, PKGBUILD local et service utilisateur
 8. React invoque `commands`, reçoit une page typée et ne garde dans son état que les données nécessaires à l'affichage.
 9. Le presse-papier copie uniquement à la demande de l'utilisateur. L'application ne possède aucun endpoint d'exécution arbitraire.
 
-Les commentaires de code expliquent les décisions, les garanties et les replis en français. Les blocs JSX, objets de configuration et délimiteurs structurels sont commentés par intention de bloc ; les commentaires ne prétendent pas donner une description métier à chaque accolade. Les bundles et lockfiles générés ne sont pas des sources à annoter manuellement. Les contributions doivent garder ce niveau pédagogique et expliquer les changements de comportement dans la documentation.
+Les commentaires manuels expliquent les décisions métier, garanties et replis en français. `npm run annotate` complète l’annotation des lignes TypeScript/TSX et Rust propres au projet, y compris les constructions structurelles. Le script compare le JavaScript compilé avant/après et refuse une modification du comportement généré. Les textes visibles JSX, bundles, lockfiles et JSON ne reçoivent pas de faux commentaires qui altéreraient leur format. Après une modification, formatez d’abord puis régénérez les annotations en dernière étape ; ne faites pas de remplacement textuel dans les commentaires générés.
 
 ### Contrat d'une nouvelle action
 
@@ -451,10 +464,14 @@ La CI inclut une matrice de compilation Linux/Windows/macOS. Un fichier de CI n'
 
 ## Limites de réception et évolutions
 
-La [matrice](docs/EXIGENCES.md) fait foi. Les principales fonctions avancées non réalisées sont la découverte physique LLDP/CDP/SNMP et WAN, le daemon Named Pipe Windows, l'édition interactive complète de graphes, la génération de toutes les commandes de sauvegarde Docker, les connexions directes PostgreSQL/MySQL, l'archivage streaming de dossiers et la publication signée dans les registres de paquets.
+La [matrice](docs/EXIGENCES.md) fait foi. Les grandes fonctions de la première version ont été complétées : Named Pipe Windows, AST, événements Docker, dossiers, restauration des salles, découverte multi-protocoles, connexions SQL et canevas exportables. Les protocoles dépendant de permissions ou de matériel doivent être recettés sur le réseau cible ; aucune preuve de liaison, d’OS ou de fabricant n’est inventée.
 
-Les objectifs de 55 Mo de RAM, 12 Mo pour le daemon, 14 Mo d'installateur et moins de 5 ms sur 100 000 commandes ne sont pas certifiés. Ils doivent être mesurés sur une machine, un jeu de données et une configuration de compilation documentés. Le moteur n'utilise pas les réglages de mmap de 30 Go proposés par le document, sans justification de charge réelle.
+Mesures locales de référence : recherche sur **100 000 commandes**, médiane **1,37 ms**, p95 **1,61 ms**, p99 **1,73 ms** ; paquet Debian **12,97 Mio**, service autonome inclus. Les rapports reproductibles sont dans [docs/benchmarks](docs/benchmarks). `npm run benchmark` mesure la vraie ouverture SQLite, le filtre, le comptage et la sérialisation ; le rendu UI est exclu.
+
+La mémoire du bureau Tauri/WebKit **dépasse la cible de 55 Mo sur cette machine**. Le rapport distingue RSS et PSS et inclut les renderers ; ce seuil ne doit pas être déclaré atteint en ne comptant que le processus parent. Le daemon est distribué comme binaire séparé sans WebView pour éviter les bibliothèques graphiques en tâche de fond. Ces mesures ne sont pas extrapolées à Windows ou macOS.
+
+Les installateurs de la matrice CI ne sont pas signés par une identité commerciale non fournie. Les outils et prérequis de publication APT/AUR/Windows/macOS sont décrits dans [DISTRIBUTION.md](docs/DISTRIBUTION.md). Le push GitHub ne prétend pas avoir créé un domaine APT, une signature Apple ou une publication winget.
 
 ## Licence et crédits
 
-Code propre au projet sous [licence MIT](LICENSE). Les bibliothèques tierces conservent leurs licences. L'auteur et l'identité du projet proviennent des documents fournis. La version 0.1.0 permet d'examiner, utiliser et faire évoluer le logiciel avec une visibilité explicite sur ses limites.
+Code propre au projet sous [licence MIT](LICENSE). Les bibliothèques tierces conservent leurs licences. L'auteur et l'identité du projet proviennent des documents fournis. La version candidate permet d'examiner, utiliser et faire évoluer le logiciel avec une visibilité explicite sur ses limites.

@@ -24,11 +24,11 @@ flowchart LR
 
 ## Cycle de vie
 
-Aucun scan actif et aucun partage ne sont lancés au démarrage. Le bureau tente un import de ses historiques. Le daemon est un processus utilisateur séparé et volontaire. Il prend un verrou exclusif avant de gérer son socket et actualise les historiques/Docker toutes les trente secondes.
+Aucun scan actif et aucun partage ne sont lancés au démarrage. Le bureau tente un import de ses historiques. Le daemon est un processus utilisateur séparé et volontaire, distribué sans bibliothèques WebView. Il prend un verrou exclusif avant de gérer son socket et importe les historiques toutes les trente secondes et suit les événements Docker.
 
 Une salle appartient à une poignée `Host`. Son remplacement ferme l'ancienne salle. La destruction de la poignée arrête le serveur et l'annonce mDNS. Les captures historiques ne sont pas supprimées à la fermeture de leurs producteurs.
 
-L'état des rôles LAN est en mémoire et la reprise navigateur suppose la même salle active. La persistance après un arrêt de l'hôte nécessiterait une gestion de session durable, une politique d'expiration et une nouvelle recette ; elle n'est pas simulée avec un simple fichier de jetons.
+Les rôles LAN, paramètres de salle, empreintes de jetons et port sont persistés dans SQLite. La restauration explicite réutilise la même origine HTTPS jusqu’à l’expiration de 24 heures. Une fermeture volontaire invalide la restauration ; une expulsion reste durable. Les Bearer bruts ne sont pas écrits en base.
 
 ## Schéma local
 
@@ -69,3 +69,9 @@ Le client de salle est compilé séparément en un bundle autonome embarqué dan
 Tauri réutilise la WebView système. Tokio fournit tâches, délais et sockets. Rusqlite embarque SQLite/FTS5. Axum définit les routes, axum-server et rustls assurent TLS, mdns-sd annonce la salle, qrcode construit le QR et sqlparser analyse les définitions SQL. Le client web calcule BLAKE3 avec une bibliothèque embarquée sous MIT.
 
 Libp2p et pnet ne sont pas ajoutés pour une simple correspondance de noms avec le CDC : aucune fonctionnalité actuelle ne justifie leur coût. React Flow, Dagre et un éditeur MCD métier pourront être ajoutés avec les besoins d'édition interactive identifiés, plutôt que présentés comme une capacité existante.
+
+## Compléments de la version candidate
+
+`daemon_main.rs` fournit un service sans WebView. Les captures sont authentifiées sur les deux transports et possèdent un identifiant de retry durable. `shell_ast.rs` utilise des grammaires réelles après masquage. `archives.rs` compresse les dossiers sans suivre les liens internes. `database_connections.rs` lit les catalogues PostgreSQL/MySQL et ne persiste aucun identifiant. `network_protocols.rs` décode les preuves ARP/LLDP/CDP et BER/SNMP avec contrôles de longueurs.
+
+Les modules React ont été séparés : canevas React Flow/Dagre, inspection AST, connexions SQL, découverte et restauration de salles. Le SVG vectoriel échappe les noms ; le PNG est rendu localement. Les nœuds et relations provenant du réseau ou d’un DDL ne sont jamais injectés comme HTML brut.

@@ -1,7 +1,8 @@
 [package]
 name = "omnishell-studio"
-version = "0.1.0"
+version = "1.0.0-rc.1"
 edition = "2021"
+default-run = "omnishell"
 authors = ["Kossi Bernard Etonam ADJOGBLE"]
 description = "Local-first workstation for commands, infrastructure and classrooms"
 license = "MIT"
@@ -14,9 +15,14 @@ path = "src/lib.rs"
 name = "omnishell"
 path = "src/main.rs"
 
+# Le service dédié n'importe pas Tauri et reste léger même avec le bureau installé.
+[[bin]]
+name = "omnishell-daemon"
+path = "src/daemon_main.rs"
+
 [features]
 default = []
-desktop = ["dep:tauri", "dep:tauri-build"]
+desktop = ["dep:tauri", "dep:tauri-build", "dep:tauri-plugin-dialog", "dep:tauri-plugin-opener"]
 
 [build-dependencies]
 tauri-build = { version = "2", optional = true , features = [] }
@@ -30,7 +36,7 @@ blake3 = "1"
 shlex = "1"
 dirs = "6"
 tokio = { version = "1", features = ["full"] }
-axum = { version = "0.8", features = ["ws", "multipart"] }
+axum = { version = "0.8", features = ["ws"] }
 tower-http = { version = "0.6", features = ["fs", "limit"] }
 rand = "0.9"
 qrcode = { version = "0.14", default-features = false, features = ["svg"] }
@@ -45,6 +51,31 @@ rcgen = "0.13"
 mdns-sd = "0.13"
 fs2 = "0.4"
 
+# Les archives de dossiers et l'analyse syntaxique restent entièrement locales.
+tar = "0.4"
+zstd = "0.13"
+tree-sitter = "0.25"
+tree-sitter-bash = "0.25"
+tree-sitter-powershell = "0.26"
+tree-sitter-fish = "3.6"
+futures-util = "0.3"
+percent-encoding = "2"
+csv = "1.3"
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "postgres", "mysql"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+tauri-plugin-dialog = { version = "2", optional = true }
+tauri-plugin-opener = { version = "2", optional = true }
+
 [dev-dependencies]
 # Le client HTTPS sert uniquement aux tests d'intégration du serveur embarqué.
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+# Sous Windows l'absence de pilote raw reste un repli explicite ; le daemon et TCP restent natifs.
+[target.'cfg(unix)'.dependencies]
+pnet = "0.35"
+
+[profile.release]
+# Le binaire distribué ne conserve pas les symboles de diagnostic ni les duplications inutiles.
+strip = true
+lto = "thin"
+codegen-units = 1

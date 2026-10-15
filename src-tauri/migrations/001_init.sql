@@ -25,3 +25,8 @@ CREATE TABLE IF NOT EXISTS imports(path TEXT PRIMARY KEY, digest TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS snapshots(kind TEXT NOT NULL, key TEXT NOT NULL, payload TEXT NOT NULL, captured_at INTEGER NOT NULL, PRIMARY KEY(kind,key));
 -- Les modèles SQL sont conservés indépendamment des historiques shell.
 CREATE TABLE IF NOT EXISTS models(name TEXT PRIMARY KEY, ddl TEXT NOT NULL, updated_at INTEGER NOT NULL);
+
+-- L'identifiant d'événement rend les retries des hooks et du daemon idempotents.
+CREATE TABLE IF NOT EXISTS capture_receipts(event_id TEXT PRIMARY KEY, captured_at INTEGER NOT NULL);
+-- Les sessions LAN et leurs rôles peuvent être restaurés sans réouvrir les droits d'un pair expulsé.
+CREATE TABLE IF NOT EXISTS share_rooms(id TEXT PRIMARY KEY, payload TEXT NOT NULL, updated_at INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 1);

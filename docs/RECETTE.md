@@ -5,10 +5,11 @@
 Date de référence utilisateur : **15 octobre 2026**. Plateforme de compilation : Linux, Node 24, Rust 1.99, WebKitGTK 4.1 disponible.
 
 - Compilation TypeScript et assets de production Vite : réussie.
-- Compilation du bureau Tauri Linux et génération d'un `.deb` : réussies lors du premier build ; paquet de 9,56 Mio.
-- Dix tests unitaires Rust : réussis (formats d'historique, UTF-16LE, continuations, enveloppes, secrets, limites réseau, DDL et cardinalités).
-- Un scénario d'intégration Rust : réussi avec vrai serveur HTTPS local, stockage SQLite et droits de participants.
-- Quatre parcours Playwright dans Chrome : réussis, y compris navigation des cinq modules, favoris/recherche, absence du moteur et capture de référence.
+- Compilation du bureau Tauri Linux et génération d'un `.deb` : réussies lors du premier build ; paquet de 12,97 Mio, service autonome inclus.
+- Seize tests unitaires Rust : réussis (formats d'historique, UTF-16LE, continuations, enveloppes, secrets, limites réseau, DDL et cardinalités).
+- Deux scénarios d’intégration Rust : serveur HTTPS et stockage/permissions/restauration, ainsi que redémarrage d’un vrai daemon sur son transport natif.
+- Deux recettes SQL supplémentaires exécutées : PostgreSQL 17 et MariaDB 11 sur conteneurs éphémères nettoyés.
+- Cinq parcours Playwright dans Chrome : réussis, y compris navigation des cinq modules, favoris/recherche, absence du moteur et capture de référence.
 
 Le test LAN requiert l'énumération d'une interface IPv4 non-loopback et l'autorisation d'écouter localement. Un environnement sandbox bloquant ces appels doit autoriser ce test ou le lancer dans un runner adapté. Le résultat du test n'implique pas une connexion à un serveur Internet.
 
@@ -41,7 +42,7 @@ Avec un moteur de laboratoire, créez un conteneur possédant un port, un volume
 
 ## Recette du réseau
 
-Sur un /24 de laboratoire autorisé, exposez un service connu puis sondez. Comparez le port observé. Arrêtez le service puis recommencez : son absence des nouvelles observations ne doit pas être décrite comme une preuve que l'équipement est éteint. Vérifiez que les préfixes publics et les sous-réseaux plus larges sont refusés. Ouvrez les exports JSON et l'impression PDF. Un test LLDP/SNMP n'est pas pertinent tant que ces fonctions ne sont pas implémentées.
+Sur un /24 de laboratoire autorisé, exposez un service connu puis sondez. Comparez le port observé. Arrêtez le service puis recommencez : son absence des nouvelles observations ne doit pas être décrite comme une preuve que l'équipement est éteint. Vérifiez que les préfixes publics et les sous-réseaux plus larges sont refusés. Ouvrez les exports JSON et l'impression PDF. Recettez LLDP/CDP sur un équipement émettant effectivement ces annonces et SNMPv2c sur un équipement de laboratoire configuré ; les parseurs de trames sont testés sans exiger ce matériel.
 
 ## Recette de salle LAN
 
@@ -57,7 +58,7 @@ Sur un /24 de laboratoire autorisé, exposez un service connu puis sondez. Compa
 10. Fermez la salle ; l'URL ne doit plus servir de téléchargement.
 11. Examinez le dossier de réception et sa politique de nettoyage.
 
-Le test automatisé vérifie notamment `401`, `403`, `206` et `409`. Une recette complémentaire doit vérifier le remplissage disque, les corps trop gros et le comportement multi-pairs en charge. La session ne doit pas être annoncée comme restaurable après arrêt de l'hôte.
+Le test automatisé vérifie notamment `401`, `403`, `206` et `409`. Le scénario vérifie aussi un hash invalide, un dépassement de taille, la publication d’un fichier vide et la restauration. Une recette complémentaire doit vérifier le remplissage disque et le comportement multi-pairs en charge. La restauration doit réutiliser le port précédent et conserver les rôles et expulsions ; elle est testée automatiquement.
 
 ## Recette DBA
 
@@ -68,3 +69,9 @@ Testez un DDL simple puis : types avec virgules, PK composite, FK composite, FK 
 Pour chaque OS, relevez le commit, le compilateur, le mode release, le matériel, la RAM au repos/après import, la taille du paquet, la taille de base et le temps de recherche médian/p95/p99 sur 100 000 commandes synthétiques. Séparez le coût du démarrage du processus, l'ouverture SQLite, la recherche et le rendu UI. Ne comparez pas une requête chaude en mémoire avec un lancement froid complet.
 
 Les chiffres client restent des cibles tant que ce protocole n'est pas exécuté. La signature et l'installation Windows/macOS nécessitent leurs environnements et identités de signature ; elles ne sont pas validées par la création du `.deb` Linux.
+
+## Mesures enregistrées
+
+Le rapport `benchmarks/search-linux.json` utilise cent mille commandes synthétiques et deux cents recherches complètes : médiane 1,37 ms, p95 1,61 ms, p99 1,73 ms. Le rapport `benchmarks/resources-linux.json` inclut les descendants du processus : daemon dédié 7 996 Kio RSS / 5 378 Kio PSS ; bureau 691 396 Kio RSS cumulés / 314 450 Kio PSS. Les pages partagées sont comptées plusieurs fois dans la somme RSS ; PSS ne doit pas être présenté comme RSS. Le bureau n’atteint pas le budget de 55 Mo.
+
+Le script de mesure utilise un HOME/XDG privé, cent commandes synthétiques et un Docker indisponible ; il ne lit ni l’historique réel ni les conteneurs du compte. Les captures d’interface utilisent des fixtures, pas des données utilisateur.

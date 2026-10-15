@@ -31,11 +31,11 @@ Le mode Vite n'ajoute pas d'API système ouverte pour faciliter le développemen
 - Uploads limités à 4 Mio par bloc, 2 Gio par transfert et 10 Gio par salle.
 - Réserve disque de 64 Mio ; décalage durable et BLAKE3 vérifiés avant acquittement.
 
-Le nom d'un participant est déclaratif. Une expulsion invalide son jeton mais n'empêche pas une réinscription avec un autre nom s'il connaît le PIN. Le service n'effectue pas une authentification institutionnelle, une analyse antivirus ou une interdiction matérielle. Les fichiers reçus ne sont ni exécutés ni republiés automatiquement.
+Le nom d'un participant est déclaratif. Une expulsion invalide son jeton mais n'empêche pas une réinscription avec un autre nom s'il connaît le PIN. Le service n’effectue pas une authentification institutionnelle, une analyse antivirus ou une interdiction matérielle. Les contributions terminées sont publiées dans la salle après contrôle de nom, taille et blocs ; elles ne sont jamais exécutées.
 
-La révocation interdit la requête ou le bloc suivant. Un téléchargement déjà autorisé et dont le flux HTTP est ouvert peut continuer jusqu'à sa fin. Le code ne prétend pas récupérer des octets déjà reçus par le participant. Fermer la salle arrête le serveur et ses connexions.
+La révocation interdit la requête ou le bloc suivant. Chaque segment émis du téléchargement relit aussi les permissions ; le flux peut donc être interrompu après une expulsion. Le code ne prétend pas récupérer des octets déjà reçus par le participant. Fermer la salle arrête le serveur et ses connexions.
 
-Le contrôle d'espace libre est une photographie : un autre processus peut consommer le disque après la vérification. L'échec d'écriture reste donc géré. Les quotas sont fixes dans cette livraison ; un panneau de configuration et une politique de rétention sont des évolutions nécessaires pour des déploiements larges.
+Le contrôle d'espace libre est une photographie : un autre processus peut consommer le disque après la vérification. L'échec d'écriture reste donc géré. Les quotas se configurent avant ouverture ; la politique de rétention des contributions reste une responsabilité de déploiement.
 
 ## Réseau actif
 
@@ -48,3 +48,7 @@ Aucune capacité `cap_net_admin`, appartenance au groupe Docker, règle de pare-
 Préparez un scénario minimal, la version, le système, les journaux expurgés et l'impact observé. Ne placez pas de jeton, certificat privé ou historique brut dans un ticket public. Le dépôt ne déclare pas d'adresse de contact de sécurité non vérifiée.
 
 Avant une diffusion institutionnelle : revue des permissions, test de charge multi-pairs, revue TLS/confiance, gestion des expirations de session, tests sur les plateformes cibles, audit de dépendances et politique de conservation doivent être réalisés par le responsable du déploiement.
+
+## Accès Internet facultatif
+
+Le fonctionnement local n’émet aucun appel WAN. Le bouton de collecte FAI/IP publique utilise HTTPS vers ipapi.co, dont le service observe l’adresse de la requête. Cette action est expliquée dans le panneau et distincte du scan LAN. Les connexions SQL sont également explicites : les URLs et identifiants ne sont ni enregistrés avec les modèles ni renvoyés dans les erreurs brutes de pilotes.
